@@ -1,0 +1,14 @@
+{
+  "name": "@dhara/config",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "build": "echo '@dhara/config valid'",
+    "typecheck": "echo '@dhara/config valid'",
+    "lint": "echo '@dhara/config valid'"
+  },
+  "files": [
+    "tsconfig.base.json"
+  ]
+}

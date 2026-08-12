@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # Primary Relational Database (TimescaleDB compatible)
+  postgres:
+    image: postgres:16-alpine
+    container_name: dhara_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dhara_user
+      POSTGRES_PASSWORD: dhara_password
+      POSTGRES_DB: dhara_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dhara_user -d dhara_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Local Development MQTT Broker (Mosquitto)
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: dhara_mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+
+volumes:
+  postgres_data:
+  mosquitto_data:
+  mosquitto_log:

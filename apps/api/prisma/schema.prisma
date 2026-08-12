@@ -1,0 +1,257 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  INVITED
+  DEACTIVATED
+}
+
+enum OrganizationStatus {
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum MembershipStatus {
+  ACTIVE
+  INVITED
+  SUSPENDED
+  REMOVED
+}
+
+enum Role {
+  SUPER_ADMIN
+  ORGANIZATION_ADMIN
+  FARM_OWNER
+  FARM_MANAGER
+  OPERATOR
+  TECHNICIAN
+  VIEWER
+}
+
+enum AuditEventType {
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+  USER_REGISTERED
+  ORGANIZATION_CREATED
+  MEMBERSHIP_CREATED
+  ROLE_CHANGED
+  FARM_CREATED
+  FARM_UPDATED
+  FARM_ARCHIVED
+  FIELD_CREATED
+  FIELD_UPDATED
+  FIELD_ARCHIVED
+  ZONE_CREATED
+  ZONE_UPDATED
+  ZONE_ARCHIVED
+  CROP_CYCLE_CREATED
+  CROP_CYCLE_UPDATED
+  CROP_CYCLE_ARCHIVED
+}
+
+enum FarmStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum FieldStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum ZoneStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum IrrigationType {
+  DRIP
+  SPRINKLER
+  FLOOD
+  OTHER
+}
+
+enum CropCycleStatus {
+  PLANNED
+  ACTIVE
+  HARVESTED
+  CANCELLED
+}
+
+model User {
+  id            String                   @id @default(uuid())
+  email         String                   @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  phone         String?
+  status        UserStatus               @default(ACTIVE)
+  emailVerified Boolean                  @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+  memberships   OrganizationMembership[]
+  sessions      Session[]
+  auditLogs     AuditLog[]
+}
+
+model Session {
+  id               String    @id @default(uuid())
+  userId           String
+  sessionTokenHash String    @unique
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  lastUsedAt       DateTime  @default(now())
+  ipAddress        String?
+  userAgent        String?
+  createdAt        DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Organization {
+  id          String                   @id @default(uuid())
+  name        String
+  slug        String                   @unique
+  status      OrganizationStatus       @default(ACTIVE)
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+  memberships OrganizationMembership[]
+  farms       Farm[]
+  auditLogs   AuditLog[]
+}
+
+model OrganizationMembership {
+  id             String           @id @default(uuid())
+  userId         String
+  organizationId String
+  role           Role             @default(VIEWER)
+  status         MembershipStatus @default(ACTIVE)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+}
+
+model AuditLog {
+  id             String         @id @default(uuid())
+  userId         String?
+  organizationId String?
+  eventType      AuditEventType
+  ipAddress      String?
+  userAgent      String?
+  detailsJson    String?
+  createdAt      DateTime       @default(now())
+
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+}
+
+model Farm {
+  id             String     @id @default(uuid())
+  organizationId String
+  name           String
+  slug           String
+  description    String?
+  locationName   String?
+  latitude       Float?
+  longitude      Float?
+  area           Float?
+  areaUnit       String     @default("hectares")
+  status         FarmStatus @default(ACTIVE)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fields       Field[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+}
+
+model Field {
+  id          String      @id @default(uuid())
+  farmId      String
+  name        String
+  description String?
+  area        Float?
+  areaUnit    String      @default("hectares")
+  soilType    String?
+  latitude    Float?
+  longitude   Float?
+  status      FieldStatus @default(ACTIVE)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  farm       Farm        @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  zones      Zone[]
+  cropCycles CropCycle[]
+
+  @@index([farmId])
+}
+
+model Zone {
+  id             String         @id @default(uuid())
+  fieldId        String
+  name           String
+  description    String?
+  area           Float?
+  areaUnit       String         @default("hectares")
+  irrigationType IrrigationType @default(DRIP)
+  status         ZoneStatus     @default(ACTIVE)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  field      Field       @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  cropCycles CropCycle[]
+
+  @@index([fieldId])
+}
+
+model Crop {
+  id             String      @id @default(uuid())
+  name           String      @unique
+  scientificName String?
+  category       String?
+  description    String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  cropCycles CropCycle[]
+}
+
+model CropCycle {
+  id                  String          @id @default(uuid())
+  fieldId             String
+  zoneId              String?
+  cropId              String
+  seasonName          String?
+  sowingDate          DateTime?
+  expectedHarvestDate DateTime?
+  growthStage         String?
+  status              CropCycleStatus @default(ACTIVE)
+  notes               String?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  field Field @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  zone  Zone? @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  crop  Crop  @relation(fields: [cropId], references: [id], onDelete: Restrict)
+
+  @@index([fieldId])
+  @@index([zoneId])
+  @@index([cropId])
+}

@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Deep Natural Green & Soil Tone Design Tokens */
+    --background: 156 30% 4%;       /* #060b08 - Deep Agricultural Slate Dark */
+    --foreground: 150 20% 98%;      /* Near White */
+
+    --card: 156 25% 7%;             /* #0b1410 - Dark Agri Panel */
+    --card-foreground: 150 20% 98%;
+
+    --popover: 156 25% 7%;
+    --popover-foreground: 150 20% 98%;
+
+    --primary: 142 69% 38%;         /* Deep Natural Green #15803d */
+    --primary-foreground: 144 80% 98%;
+
+    --secondary: 24 88% 26%;        /* Rich Soil Amber #78350f */
+    --secondary-foreground: 40 80% 98%;
+
+    --muted: 156 18% 14%;           /* Neutral Surface */
+    --muted-foreground: 150 12% 65%;
+
+    --accent: 156 35% 15%;          /* Subtle Natural Green Accent */
+    --accent-foreground: 150 20% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 156 18% 15%;          /* Subtle Dark Border */
+    --input: 156 18% 15%;
+    --ring: 142 69% 38%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    background-image: 
+      radial-gradient(circle at 50% 0%, rgba(21, 128, 61, 0.08) 0%, transparent 60%),
+      radial-gradient(circle at 100% 100%, rgba(120, 53, 15, 0.05) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+}
+
+/* Accessible Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Subtle Industrial Surface Styling */
+.agri-card {
+  background: #0b1410;
+  border: 1px solid rgba(34, 197, 94, 0.12);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+}
+
+.agri-card-hover {
+  transition: all 0.25s ease-in-out;
+}
+.agri-card-hover:hover {
+  border-color: rgba(34, 197, 94, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px -4px rgba(21, 128, 61, 0.15);
+}
+
+/* Subtle Grain / Pattern Background for Visual Character */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}

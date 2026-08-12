@@ -1,0 +1,16 @@
+{
+  "name": "@dhara/shared",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "npx tsc",
+    "typecheck": "npx tsc --noEmit",
+    "lint": "npx eslint src --ext .ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
