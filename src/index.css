@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-main: #07120c;
+  --bg-sidebar: #0c1d14;
+  --bg-card: #0c1d14;
+  --bg-subcard: #07120c;
+  --border-color: #163324;
+  --border-sub: #11281c;
+  --text-main: #ecfdf5;
+  --text-heading: #ffffff;
+  --text-muted: #94a3b8;
+  --text-accent: #34d399;
+}
+
+html.light {
+  --bg-main: #f8fafc;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-subcard: #f1f5f9;
+  --border-color: #e2e8f0;
+  --border-sub: #cbd5e1;
+  --text-main: #0f172a;
+  --text-heading: #0f172a;
+  --text-muted: #64748b;
+  --text-accent: #059669;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Custom scrollbars for data tables and sidebars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-subcard);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #10b981;
+}
+
+/* Theme aware card styling */
+.agri-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+html.light .agri-card {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+}
+
+.agri-card-hover:hover {
+  border-color: var(--text-accent);
+}
