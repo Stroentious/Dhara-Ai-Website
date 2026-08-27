@@ -1,0 +1,5 @@
+{
+  "task.allowAutomaticTasks": "off",
+  "livePreview.autoRefreshPreview": "never",
+  "livePreview.openPreviewTarget": "externalBrowser"
+}

@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🌱 Start DHARA AI (Full Stack)",
+      "type": "npm",
+      "script": "dev",
+      "path": "",
+      "problemMatcher": []
+    },
+    {
+      "label": "⚡ Start Smart Launcher",
+      "type": "shell",
+      "command": "${workspaceFolder}\\start_dharaai_smart.bat",
+      "problemMatcher": []
+    },
+    {
+      "label": "🛑 Stop DHARA AI Servers",
+      "type": "shell",
+      "command": "${workspaceFolder}\\stop_dharaai.bat",
+      "problemMatcher": []
+    }
+  ]
+}
