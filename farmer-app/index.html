@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photorealistic 3D Indian Farmer | Interactive Three.js Experience</title>
+  
+  <!-- Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Three.js & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0d120f;
+      font-family: 'Inter', sans-serif;
+      color: #f3f4f6;
+      user-select: none;
+    }
+
+    #webgl-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      outline: none;
+    }
+
+    /* Cinematic Vignette & Atmospheric Grading */
+    .cinematic-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      background: radial-gradient(circle at center, transparent 45%, rgba(13, 18, 15, 0.45) 85%, rgba(7, 10, 8, 0.8) 100%),
+                  linear-gradient(to top, rgba(13, 18, 15, 0.6) 0%, transparent 25%);
+    }
+
+    /* Subtle Golden Sun Flare */
+    .sun-flare {
+      position: absolute;
+      top: 8%;
+      right: 18%;
+      width: 380px;
+      height: 380px;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, rgba(255, 200, 110, 0.28) 0%, rgba(255, 145, 50, 0.12) 35%, transparent 70%);
+      pointer-events: none;
+      z-index: 2;
+      filter: blur(28px);
+      animation: flarePulse 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes flarePulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      100% { transform: scale(1.08); opacity: 1.0; }
+    }
+
+    /* Header Bar */
+    .header-bar {
+      position: absolute;
+      top: 24px;
+      left: 28px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #ffbe76;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ff793f;
+      box-shadow: 0 0 8px #ff793f;
+      animation: pulseDot 2s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.72);
+      max-width: 360px;
+      line-height: 1.45;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Floating Interactive Controls */
+    .controls-panel {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(20, 26, 22, 0.65);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      padding: 10px 16px;
+      border-radius: 40px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #f3f4f6;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn.active {
+      background: linear-gradient(135deg, #e1493b, #d83d32);
+      border-color: #ff6b5b;
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(225, 73, 59, 0.4);
+    }
+
+    .view-chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      background: transparent;
+      border: 1px solid transparent;
+      color: rgba(255, 255, 255, 0.65);
+      transition: all 0.2s;
+    }
+
+    .view-chip:hover {
+      color: #fff;
+    }
+
+    .view-chip.selected {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+    }
+
+    /* Live Features / Details Card (Top Right) */
+    .details-card {
+      position: absolute;
+      top: 24px;
+      right: 28px;
+      z-index: 10;
+      background: rgba(20, 26, 22, 0.55);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 16px 20px;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.78);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+      max-width: 250px;
+    }
+
+    .details-card h4 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 4px;
+    }
+
+    .detail-label {
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    .detail-val {
+      font-weight: 500;
+      color: #ffbe76;
+    }
+
+    /* Loading Screen */
+    #loader {
+      position: absolute;
+      inset: 0;
+      z-index: 100;
+      background: #0e1411;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      transition: opacity 0.6s ease;
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #ff793f;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loader">
+    <div class="spinner"></div>
+    <div style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.05em; color: #ffbe76;">
+      GENERATING PHOTOREALISTIC 3D INDIAN FARMER...
+    </div>
+  </div>
+
+  <div class="sun-flare"></div>
+  <div class="cinematic-overlay"></div>
+
+  <!-- Header -->
+  <div class="header-bar">
+    <div class="badge">
+      <div class="badge-dot"></div>
+      Photorealistic 3D Human Character
+    </div>
+    <h1 class="title">The Indian Farmer</h1>
+    <p class="subtitle">Real human anatomy, coral-red turban, light beige striped cotton shirt with rolled sleeves, standing with arms crossed in golden-hour agricultural fields.</p>
+  </div>
+
+  <!-- Details Card -->
+  <div class="details-card">
+    <h4>Character Attributes</h4>
+    <div class="detail-item">
+      <span class="detail-label">Physique</span>
+      <span class="detail-val">Adult Male (~7.8 Heads)</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Headwear</span>
+      <span class="detail-val">Coral-Red Pagri (Turban)</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Shirt</span>
+      <span class="detail-val">Striped Beige Khadi</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Facial Hair</span>
+      <span class="detail-val">Salt-and-Pepper Stubble</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Pose</span>
+      <span class="detail-val">Arms Crossed</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Lighting</span>
+      <span class="detail-val">Golden Hour (Low Sun)</span>
+    </div>
+  </div>
+
+  <!-- Floating Controls -->
+  <div class="controls-panel">
+    <button class="btn active" id="orbit-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+      Auto-Orbit
+    </button>
+    <button class="btn active" id="breeze-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+      Rural Breeze
+    </button>
+
+    <div style="width: 1px; height: 20px; background: rgba(255, 255, 255, 0.15); margin: 0 4px;"></div>
+
+    <button class="view-chip selected" data-cam="full">Full Body</button>
+    <button class="view-chip" data-cam="portrait">Portrait</button>
+    <button class="view-chip" data-cam="cinematic">Cinematic</button>
+  </div>
+
+  <canvas id="webgl-canvas"></canvas>
+
+  <script>
+    // ── 1. PROCEDURAL CANVAS TEXTURE GENERATORS ──
+
+    // A. Striped Beige Cotton Shirt Texture
+    function createStripedShirtTexture() {
+      const size = 512;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Light beige / ecru base
+      ctx.fillStyle = '#ebe1d0';
+      ctx.fillRect(0, 0, size, size);
+
+      // Fine cotton warp & weft micro-texture
+      for (let y = 0; y < size; y += 3) {
+        for (let x = 0; x < size; x += 3) {
+          const shade = 220 + Math.floor(Math.random() * 25);
+          ctx.fillStyle = `rgb(${shade}, ${shade - 12}, ${shade - 28})`;
+          ctx.fillRect(x, y, 2, 2);
+        }
+      }
+
+      // Elegant vertical khadi pinstripes
+      const stripeSpacing = 24;
+      for (let x = 0; x < size; x += stripeSpacing) {
+        // Main pinstripe
+        ctx.fillStyle = 'rgba(175, 155, 130, 0.45)';
+        ctx.fillRect(x, 0, 3, size);
+
+        // Thin accent border
+        ctx.fillStyle = 'rgba(145, 125, 100, 0.25)';
+        ctx.fillRect(x - 1, 0, 1, size);
+        ctx.fillRect(x + 3, 0, 1, size);
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(4, 4);
+      return texture;
+    }
+
+    // B. Coral-Red Handspun Turban Texture
+    function createCoralTurbanTexture() {
+      const size = 512;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Rich coral-red base
+      ctx.fillStyle = '#df4738';
+      ctx.fillRect(0, 0, size, size);
+
+      // Diagonal twill weave & cloth slub variation
+      for (let i = 0; i < 6000; i++) {
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const len = 4 + Math.random() * 8;
+        const isHighlight = Math.random() > 0.45;
+        ctx.strokeStyle = isHighlight ? 'rgba(248, 105, 90, 0.28)' : 'rgba(160, 36, 25, 0.35)';
+        ctx.lineWidth = 1 + Math.random() * 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + len, y + len);
+        ctx.stroke();
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(6, 6);
+      return texture;
+    }
+
+    // C. Realistic Skin with Salt-and-Pepper Stubble Micro-Texture
+    function createSkinTexture() {
+      const size = 512;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Warm melanin-rich sun-kissed Indian skin tone
+      ctx.fillStyle = '#844c2a';
+      ctx.fillRect(0, 0, size, size);
+
+      // Subsurface vascular warmth & micro-pores
+      for (let i = 0; i < 15000; i++) {
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const r = Math.random() > 0.5 ? 142 : 125;
+        const g = Math.random() > 0.5 ? 78 : 68;
+        const b = Math.random() > 0.5 ? 46 : 38;
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.25)`;
+        ctx.fillRect(x, y, 1.5, 1.5);
+      }
+
+      // Salt-and-pepper stubble pattern (lower half of texture for jaw/chin)
+      for (let i = 0; i < 3500; i++) {
+        const x = Math.random() * size;
+        const y = size * 0.45 + Math.random() * (size * 0.55);
+        const isWhiteHair = Math.random() < 0.28; // 28% silver/white hair for salt-and-pepper look
+        ctx.fillStyle = isWhiteHair ? 'rgba(215, 215, 215, 0.85)' : 'rgba(32, 26, 22, 0.85)';
+        ctx.fillRect(x, y, 1.2, 2.4);
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      return texture;
+    }
+
+    // D. Handcrafted Dark Oiled Leather Texture for Juttis
+    function createLeatherTexture() {
+      const size = 256;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#322015';
+      ctx.fillRect(0, 0, size, size);
+
+      // Pebble grain
+      for (let i = 0; i < 900; i++) {
+        const cx = Math.random() * size;
+        const cy = Math.random() * size;
+        const r = 1.5 + Math.random() * 2.5;
+        ctx.fillStyle = `rgba(${42 + Math.random() * 25}, ${26 + Math.random() * 18}, ${16 + Math.random() * 12}, 0.65)`;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(4, 4);
+      return texture;
+    }
+
+    // E. Agricultural Crop Row Leaves Texture
+    function createCropTexture() {
+      const size = 256;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#3a6628';
+      ctx.fillRect(0, 0, size, size);
+
+      // Leaf veins and foliage variation
+      for (let i = 0; i < 800; i++) {
+        ctx.fillStyle = Math.random() > 0.5 ? '#4b8032' : '#2a4d1b';
+        ctx.fillRect(Math.random() * size, Math.random() * size, 3 + Math.random() * 6, 2 + Math.random() * 4);
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(16, 16);
+      return texture;
+    }
+
+
+    // ── 2. CONTINUOUS ANATOMICAL GEOMETRY BUILDERS ──
+
+    // Continuous Quad-Mesh Lofting Function
+    function createLoftedGeometry(rings, segments = 24) {
+      const positions = [];
+      const uvs = [];
+      const indices = [];
+      const numRings = rings.length;
+
+      for (let i = 0; i < numRings; i++) {
+        const ring = rings[i];
+        const y = ring.y;
+        const v = i / (numRings - 1);
+
+        for (let j = 0; j <= segments; j++) {
+          const u = j / segments;
+          const theta = (j % segments) * (Math.PI * 2 / segments);
+          const pt = ring.sample(theta);
+          positions.push(pt.x, y, pt.z);
+          uvs.push(u, v);
+        }
+      }
+
+      for (let i = 0; i < numRings - 1; i++) {
+        for (let j = 0; j < segments; j++) {
+          const a = i * (segments + 1) + j;
+          const b = (i + 1) * (segments + 1) + j;
+          const c = (i + 1) * (segments + 1) + (j + 1);
+          const d = i * (segments + 1) + (j + 1);
+
+          indices.push(a, b, d);
+          indices.push(b, c, d);
+        }
+      }
+
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+      geo.setIndex(indices);
+      geo.computeVertexNormals();
+      return geo;
+    }
+
+    function createContouredLathe(pointsArray, segments = 22) {
+      const pts = pointsArray.map(p => new THREE.Vector2(p[0], p[1]));
+      return new THREE.LatheGeometry(pts, segments);
+    }
+
+
+    // ── 3. THREE.JS INITIALIZATION & SCENE SETUP ──
+
+    const canvas = document.getElementById('webgl-canvas');
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      powerPreference: 'high-performance'
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#141c16');
+    scene.fog = new THREE.FogExp2('#20291e', 0.055);
+
+    const camera = new THREE.PerspectiveCamera(36, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 1.12, 2.75);
+
+    // OrbitControls setup
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.target.set(0, 1.05, 0);
+    controls.maxPolarAngle = Math.PI * 0.52;
+    controls.minDistance = 1.2;
+    controls.maxDistance = 5.5;
+
+
+    // ── 4. CINEMATIC GOLDEN-HOUR LIGHTING RIG ──
+
+    // Key Golden Sun Light
+    const sunLight = new THREE.DirectionalLight('#fff0cf', 2.9);
+    sunLight.position.set(5.5, 4.2, 4.8);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 1024;
+    sunLight.shadow.mapSize.height = 1024;
+    sunLight.shadow.camera.near = 0.5;
+    sunLight.shadow.camera.far = 20;
+    sunLight.shadow.camera.left = -2;
+    sunLight.shadow.camera.right = 2;
+    sunLight.shadow.camera.top = 2.5;
+    sunLight.shadow.camera.bottom = -1.5;
+    sunLight.shadow.bias = -0.0005;
+    scene.add(sunLight);
+
+    // Golden Rim Light (Silhouettes Turban & Shoulders)
+    const rimLight = new THREE.DirectionalLight('#ff9436', 2.4);
+    rimLight.position.set(-4.5, 3.2, -4.2);
+    scene.add(rimLight);
+
+    // Sky Ambient Fill Light
+    const ambientLight = new THREE.AmbientLight('#a2c99b', 0.85);
+    scene.add(ambientLight);
+
+    // Soil Ground Bounce Light
+    const bounceLight = new THREE.DirectionalLight('#e6b86a', 0.55);
+    bounceLight.position.set(0, -3, 2);
+    scene.add(bounceLight);
+
+
+    // ── 5. AGRICULTURAL FIELD ENVIRONMENT ──
+
+    // Ground Plane with Undulating Field Furrows
+    const groundGeo = new THREE.PlaneGeometry(60, 60, 64, 64);
+    groundGeo.rotateX(-Math.PI * 0.5);
+    const pos = groundGeo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i);
+      const z = pos.getZ(i);
+      // Agricultural furrow ridges
+      const furrow = Math.sin(x * 1.8) * 0.045;
+      const mound = Math.exp(-(x*x + z*z) * 0.08) * 0.06;
+      pos.setY(i, furrow + mound);
+    }
+    groundGeo.computeVertexNormals();
+
+    const groundMat = new THREE.MeshStandardMaterial({
+      color: '#2a2218',
+      roughness: 0.92,
+      metalness: 0.0,
+      map: createCropTexture(),
+    });
+    const groundMesh = new THREE.Mesh(groundGeo, groundMat);
+    groundMesh.receiveShadow = true;
+    scene.add(groundMesh);
+
+    // Lush Crop Rows (Green leafy vegetation clusters on field furrows)
+    const cropGroup = new THREE.Group();
+    const leafGeo = new THREE.ConeGeometry(0.12, 0.45, 5);
+    leafGeo.rotateX(Math.PI * 0.15);
+    const cropMat = new THREE.MeshStandardMaterial({
+      color: '#46752d',
+      roughness: 0.75,
+      metalness: 0.02,
+    });
+
+    const cropRows = 14;
+    const cropsPerRow = 28;
+    for (let r = 0; r < cropRows; r++) {
+      const rx = (r - cropRows / 2) * 1.7;
+      // Skip center path where farmer stands
+      if (Math.abs(rx) < 0.9) continue;
+
+      for (let c = 0; c < cropsPerRow; c++) {
+        const cz = (c - cropsPerRow / 2) * 1.2 + (Math.random() - 0.5) * 0.3;
+        if (Math.sqrt(rx * rx + cz * cz) < 1.1) continue; // clear around farmer
+
+        const cluster = new THREE.Mesh(leafGeo, cropMat);
+        cluster.position.set(rx + (Math.random() - 0.5) * 0.25, 0.15, cz);
+        cluster.rotation.y = Math.random() * Math.PI * 2;
+        cluster.rotation.z = (Math.random() - 0.5) * 0.3;
+        const scale = 0.7 + Math.random() * 0.6;
+        cluster.scale.set(scale, scale, scale);
+        cluster.castShadow = true;
+        cluster.receiveShadow = true;
+        cropGroup.add(cluster);
+      }
+    }
+    scene.add(cropGroup);
+
+    // Floating Golden Dust Motes / Pollen
+    const moteCount = 180;
+    const moteGeo = new THREE.BufferGeometry();
+    const motePos = new Float32Array(moteCount * 3);
+    for (let i = 0; i < moteCount * 3; i += 3) {
+      motePos[i] = (Math.random() - 0.5) * 10;
+      motePos[i + 1] = Math.random() * 3.5;
+      motePos[i + 2] = (Math.random() - 0.5) * 8;
+    }
+    moteGeo.setAttribute('position', new THREE.BufferAttribute(motePos, 3));
+    const moteMat = new THREE.PointsMaterial({
+      color: '#ffe29e',
+      size: 0.035,
+      transparent: true,
+      opacity: 0.75,
+      blending: THREE.AdditiveBlending,
+    });
+    const motePoints = new THREE.Points(moteGeo, moteMat);
+    scene.add(motePoints);
+
+
+    // ── 6. MATERIALS & TEXTURES ──
+
+    const skinTex = createSkinTexture();
+    const turbanTex = createCoralTurbanTexture();
+    const shirtTex = createStripedShirtTexture();
+    const leatherTex = createLeatherTexture();
+
+    const skinMaterial = new THREE.MeshStandardMaterial({
+      map: skinTex,
+      roughness: 0.65,
+      metalness: 0.02,
+    });
+
+    const turbanMaterial = new THREE.MeshStandardMaterial({
+      map: turbanTex,
+      roughness: 0.82,
+      metalness: 0.0,
+    });
+
+    const shirtMaterial = new THREE.MeshStandardMaterial({
+      map: shirtTex,
+      roughness: 0.88,
+      metalness: 0.0,
+    });
+
+    const dhotiMaterial = new THREE.MeshStandardMaterial({
+      color: '#c4b69d',
+      roughness: 0.88,
+      metalness: 0.0,
+    });
+
+    const leatherMaterial = new THREE.MeshStandardMaterial({
+      map: leatherTex,
+      color: '#342015',
+      roughness: 0.62,
+      metalness: 0.06,
+    });
+
+    const buttonMaterial = new THREE.MeshStandardMaterial({
+      color: '#4a3120',
+      roughness: 0.45,
+    });
+
+    const hairMaterial = new THREE.MeshStandardMaterial({
+      color: '#1a1614',
+      roughness: 0.85,
+    });
+
+    const eyeScleraMaterial = new THREE.MeshStandardMaterial({
+      color: '#f4f0e8',
+      roughness: 0.2,
+    });
+
+    const eyeIrisMaterial = new THREE.MeshStandardMaterial({
+      color: '#3b200e', // Warm deep amber-brown
+      roughness: 0.25,
+    });
+
+    const eyePupilMaterial = new THREE.MeshBasicMaterial({
+      color: '#080605',
+    });
+
+
+    // ── 7. PHOTOREALISTIC INDIAN FARMER CHARACTER MODEL ──
+
+    const farmerGroup = new THREE.Group();
+    scene.add(farmerGroup);
+
+    // Anatomical Landmarks:
+    // Total Height: 1.34m (with turban 1.42m). 7.8 heads tall ratio.
+
+    // A. Feet & Handcrafted Leather Juttis (y = 0.0 to 0.05)
+    function createJutti(isLeft) {
+      const group = new THREE.Group();
+      const xSign = isLeft ? -1 : 1;
+
+      // Sole
+      const soleGeo = new THREE.BoxGeometry(0.062, 0.014, 0.14);
+      const sole = new THREE.Mesh(soleGeo, leatherMaterial);
+      sole.position.set(0, 0.007, 0.025);
+      sole.castShadow = true;
+      group.add(sole);
+
+      // Curved leather vamp
+      const vampGeo = new THREE.SphereGeometry(0.034, 12, 10);
+      vampGeo.scale(0.92, 0.52, 1.28);
+      const vamp = new THREE.Mesh(vampGeo, leatherMaterial);
+      vamp.position.set(0, 0.018, 0.040);
+      vamp.castShadow = true;
+      group.add(vamp);
+
+      // Upturned pointed mojari toe curl
+      const toeCurlGeo = new THREE.ConeGeometry(0.009, 0.024, 8);
+      toeCurlGeo.rotateX(-Math.PI * 0.38);
+      const toeCurl = new THREE.Mesh(toeCurlGeo, leatherMaterial);
+      toeCurl.position.set(0, 0.022, 0.095);
+      group.add(toeCurl);
+
+      // Heel counter
+      const heelGeo = new THREE.CylinderGeometry(0.024, 0.024, 0.022, 12);
+      const heel = new THREE.Mesh(heelGeo, leatherMaterial);
+      heel.position.set(0, 0.012, -0.028);
+      group.add(heel);
+
+      return group;
+    }
+
+    const leftFoot = createJutti(true);
+    leftFoot.position.set(-0.075, 0, 0.01);
+    leftFoot.rotation.y = 0.12;
+    farmerGroup.add(leftFoot);
+
+    const rightFoot = createJutti(false);
+    rightFoot.position.set(0.075, 0, 0.03);
+    rightFoot.rotation.y = -0.16;
+    farmerGroup.add(rightFoot);
+
+
+    // B. Legs & Draped Cotton Dhoti (y = 0.05 to 0.76)
+    const legGroup = new THREE.Group();
+    farmerGroup.add(legGroup);
+
+    // Exposed Lower Calves & Ankles (Natural Indian Skin)
+    const lowerCalfGeo = new THREE.CylinderGeometry(0.024, 0.020, 0.14, 14);
+    const leftCalfSkin = new THREE.Mesh(lowerCalfGeo, skinMaterial);
+    leftCalfSkin.position.set(-0.075, 0.12, 0.0);
+    leftCalfSkin.castShadow = true;
+    legGroup.add(leftCalfSkin);
+
+    const rightCalfSkin = new THREE.Mesh(lowerCalfGeo, skinMaterial);
+    rightCalfSkin.position.set(0.075, 0.12, 0.02);
+    rightCalfSkin.castShadow = true;
+    legGroup.add(rightCalfSkin);
+
+    // Draped Dhoti Thighs & Knees (length 0.36, from y = 0.38 to 0.74)
+    const thighPts = [
+      [0.052, 0.00], // Knee drape
+      [0.070, 0.18], // Mid-thigh cloth flare
+      [0.064, 0.36], // Pelvis connection
+    ];
+    const thighGeo = createContouredLathe(thighPts, 18);
+    thighGeo.scale(1.06, 1.0, 0.90);
+
+    const leftThigh = new THREE.Mesh(thighGeo, dhotiMaterial);
+    leftThigh.position.set(-0.075, 0.38, 0.0);
+    leftThigh.castShadow = true;
+    legGroup.add(leftThigh);
+
+    const rightThigh = new THREE.Mesh(thighGeo, dhotiMaterial);
+    rightThigh.position.set(0.075, 0.38, 0.02);
+    rightThigh.castShadow = true;
+    legGroup.add(rightThigh);
+
+    // Dhoti Knee Drapes
+    const kneeDrapeGeo = createContouredLathe([
+      [0.038, 0.00],
+      [0.058, 0.14],
+      [0.052, 0.24],
+    ], 18);
+    const leftKnee = new THREE.Mesh(kneeDrapeGeo, dhotiMaterial);
+    leftKnee.position.set(-0.075, 0.16, 0.0);
+    leftKnee.castShadow = true;
+    legGroup.add(leftKnee);
+
+    const rightKnee = new THREE.Mesh(kneeDrapeGeo, dhotiMaterial);
+    rightKnee.position.set(0.075, 0.16, 0.02);
+    rightKnee.castShadow = true;
+    legGroup.add(rightKnee);
+
+    // Dhoti Waistband & Central Pleat Cascade (Patli)
+    const waistbandGeo = new THREE.TorusGeometry(0.115, 0.018, 10, 24);
+    waistbandGeo.rotateX(Math.PI * 0.5);
+    const waistband = new THREE.Mesh(waistbandGeo, dhotiMaterial);
+    waistband.position.set(0, 0.75, 0);
+    legGroup.add(waistband);
+
+    const patliGeo = new THREE.BoxGeometry(0.048, 0.32, 0.038);
+    const patli = new THREE.Mesh(patliGeo, dhotiMaterial);
+    patli.position.set(0, 0.58, 0.055);
+    patli.castShadow = true;
+    legGroup.add(patli);
+
+
+    // C. Torso & Striped Beige Khadi Kurta (y = 0.74 to 1.12)
+    const torsoGroup = new THREE.Group();
+    torsoGroup.position.set(0, 0.74, 0);
+    farmerGroup.add(torsoGroup);
+
+    // Lofted Athletic Male Thorax & Kurta
+    const torsoRings = [];
+    const torsoSteps = 16;
+    for (let i = 0; i <= torsoSteps; i++) {
+      const t = i / torsoSteps;
+      const y = -0.08 + t * (0.38 - (-0.08));
+
+      torsoRings.push({
+        y,
+        sample: (theta) => {
+          let rx = 0.115 + 0.052 * Math.sin(t * Math.PI * 0.85);
+          let rz = 0.072 + 0.022 * Math.sin(t * Math.PI * 0.85);
+
+          const cosT = Math.cos(theta);
+          const sinT = Math.sin(theta);
+
+          // Pectoral chest volume
+          if (t >= 0.62 && t <= 0.86 && cosT > 0.3) {
+            rz += 0.016 * Math.pow(cosT, 2);
+          }
+
+          // Broad masculine shoulders
+          if (t > 0.85) {
+            rx += 0.018 * Math.pow(Math.abs(sinT), 2);
+          }
+
+          // Subtle natural breathing & cloth folds
+          const fold = Math.sin(theta * 6) * 0.004 * (1 - t * 0.5);
+
+          return { x: (rx + fold) * sinT, z: (rz + fold) * cosT };
+        }
+      });
+    }
+    const torsoGeo = createLoftedGeometry(torsoRings, 26);
+    const torsoMesh = new THREE.Mesh(torsoGeo, shirtMaterial);
+    torsoMesh.castShadow = true;
+    torsoGroup.add(torsoMesh);
+
+    // Mandarin / Nehru Band Collar
+    const collarGeo = new THREE.TorusGeometry(0.042, 0.006, 8, 24);
+    collarGeo.rotateX(Math.PI * 0.5);
+    const collar = new THREE.Mesh(collarGeo, shirtMaterial);
+    collar.position.set(0, 0.38, 0);
+    torsoGroup.add(collar);
+
+    // Front Button Placket
+    const placketGeo = new THREE.BoxGeometry(0.016, 0.18, 0.006);
+    const placket = new THREE.Mesh(placketGeo, shirtMaterial);
+    placket.position.set(0, 0.27, 0.088);
+    torsoGroup.add(placket);
+
+    // 3 Coconut Buttons
+    const buttonGeo = new THREE.CylinderGeometry(0.0032, 0.0032, 0.003, 8);
+    buttonGeo.rotateX(Math.PI * 0.5);
+    for (let b = 0; b < 3; b++) {
+      const btn = new THREE.Mesh(buttonGeo, buttonMaterial);
+      btn.position.set(0, 0.32 - b * 0.05, 0.092);
+      torsoGroup.add(btn);
+    }
+
+    // Left Chest Pocket
+    const pocketGeo = new THREE.BoxGeometry(0.038, 0.044, 0.003);
+    const pocket = new THREE.Mesh(pocketGeo, shirtMaterial);
+    pocket.position.set(-0.065, 0.26, 0.084);
+    torsoGroup.add(pocket);
+
+    // Deltoid Shoulder Blend Caps
+    const shoulderCapGeo = new THREE.SphereGeometry(0.048, 12, 12);
+    shoulderCapGeo.scale(1.25, 0.88, 1.05);
+    const leftShoulderCap = new THREE.Mesh(shoulderCapGeo, shirtMaterial);
+    leftShoulderCap.position.set(-0.165, 0.34, 0);
+    torsoGroup.add(leftShoulderCap);
+
+    const rightShoulderCap = new THREE.Mesh(shoulderCapGeo, shirtMaterial);
+    rightShoulderCap.position.set(0.165, 0.34, 0);
+    torsoGroup.add(rightShoulderCap);
+
+
+    // D. Crossed Arms Assembly (Standing with Arms Crossed)
+    const armsGroup = new THREE.Group();
+    armsGroup.position.set(0, 0.28, 0);
+    torsoGroup.add(armsGroup);
+
+    // Upper Sleeve Cuffs (Rolled sleeves with thick folded fabric cuff)
+    const sleeveCuffGeo = new THREE.TorusGeometry(0.038, 0.0075, 8, 18);
+    sleeveCuffGeo.rotateX(Math.PI * 0.5);
+
+    // 1. Right Arm: Extends across chest
+    const rUpperArmGroup = new THREE.Group();
+    rUpperArmGroup.position.set(0.165, 0.05, 0);
+    rUpperArmGroup.rotation.set(0.48, -0.22, -0.72);
+    armsGroup.add(rUpperArmGroup);
+
+    // Right Upper Sleeve
+    const upperSleeveGeo = createContouredLathe([[0.036, 0], [0.042, -0.08], [0.044, -0.16], [0.034, -0.21]], 14);
+    const rUpperSleeve = new THREE.Mesh(upperSleeveGeo, shirtMaterial);
+    rUpperArmGroup.add(rUpperSleeve);
+
+    const rCuff = new THREE.Mesh(sleeveCuffGeo, shirtMaterial);
+    rCuff.position.set(0, -0.21, 0);
+    rUpperArmGroup.add(rCuff);
+
+    // Right Forearm (Folds horizontally across chest at y ~ 0.98)
+    const rForearmGeo = createContouredLathe([[0.030, 0], [0.032, -0.08], [0.026, -0.16], [0.021, -0.23]], 14);
+    const rForearm = new THREE.Mesh(rForearmGeo, skinMaterial);
+    rForearm.position.set(0.02, 0.02, 0.12);
+    rForearm.rotation.set(-0.25, 1.45, -0.10);
+    armsGroup.add(rForearm);
+
+    // 2. Left Arm: Crosses over right arm
+    const lUpperArmGroup = new THREE.Group();
+    lUpperArmGroup.position.set(-0.165, 0.05, 0);
+    lUpperArmGroup.rotation.set(0.56, 0.24, 0.72);
+    armsGroup.add(lUpperArmGroup);
+
+    const lUpperSleeve = new THREE.Mesh(upperSleeveGeo, shirtMaterial);
+    lUpperArmGroup.add(lUpperSleeve);
+
+    const lCuff = new THREE.Mesh(sleeveCuffGeo, shirtMaterial);
+    lCuff.position.set(0, -0.21, 0);
+    lUpperArmGroup.add(lCuff);
+
+    // Left Forearm (Crosses over right forearm)
+    const lForearm = new THREE.Mesh(rForearmGeo, skinMaterial);
+    lForearm.position.set(-0.02, 0.00, 0.16);
+    lForearm.rotation.set(-0.18, -1.45, 0.12);
+    armsGroup.add(lForearm);
+
+    // 3. Hands resting naturally in crossed pose
+    // Left Hand: Resting gently over the right upper bicep
+    const handPalmGeo = new THREE.BoxGeometry(0.034, 0.042, 0.016);
+    const fingerGeo = new THREE.CylinderGeometry(0.0036, 0.0032, 0.032, 6);
+
+    const leftHand = new THREE.Group();
+    leftHand.position.set(0.12, 0.05, 0.14);
+    leftHand.rotation.set(0.20, -0.65, 0.45);
+    const lPalm = new THREE.Mesh(handPalmGeo, skinMaterial);
+    leftHand.add(lPalm);
+    for (let f = 0; f < 4; f++) {
+      const finger = new THREE.Mesh(fingerGeo, skinMaterial);
+      finger.position.set(-0.012 + f * 0.008, 0.032, 0.002);
+      finger.rotation.x = -0.15 - f * 0.05;
+      leftHand.add(finger);
+    }
+    armsGroup.add(leftHand);
+
+    // Right Hand: Tucked naturally under the left arm
+    const rightHand = new THREE.Group();
+    rightHand.position.set(-0.12, -0.01, 0.11);
+    rightHand.rotation.set(0.15, 0.70, -0.35);
+    const rPalm = new THREE.Mesh(handPalmGeo, skinMaterial);
+    rightHand.add(rPalm);
+    for (let f = 0; f < 4; f++) {
+      const finger = new THREE.Mesh(fingerGeo, skinMaterial);
+      finger.position.set(-0.012 + f * 0.008, 0.030, 0.002);
+      finger.rotation.x = -0.12;
+      rightHand.add(finger);
+    }
+    armsGroup.add(rightHand);
+
+
+    // E. Sculpted Head, Face & Coral-Red Turban (y = 1.12 to 1.42)
+    const headGroup = new THREE.Group();
+    headGroup.position.set(0, 1.12, 0.015);
+    farmerGroup.add(headGroup);
+
+    // Anatomical Neck
+    const neckPts = [[0.024, -0.02], [0.028, 0.02], [0.026, 0.05], [0.024, 0.08]];
+    const neckGeo = createContouredLathe(neckPts, 18);
+    const neck = new THREE.Mesh(neckGeo, skinMaterial);
+    neck.position.set(0, 0.015, 0);
+    headGroup.add(neck);
+
+    // Adam's apple
+    const adamsAppleGeo = new THREE.SphereGeometry(0.006, 8, 8);
+    adamsAppleGeo.scale(0.7, 1.2, 0.9);
+    const adamsApple = new THREE.Mesh(adamsAppleGeo, skinMaterial);
+    adamsApple.position.set(0, 0.025, 0.025);
+    headGroup.add(adamsApple);
+
+    // Continuous Sculpted 3D Human Head Quad-Mesh
+    const headRings = [];
+    const headSteps = 16;
+    for (let i = 0; i <= headSteps; i++) {
+      const t = i / headSteps;
+      const y = 0.045 + t * (0.205 - 0.045);
+
+      headRings.push({
+        y,
+        sample: (theta) => {
+          let rx = 0.045 * Math.sin(t * Math.PI * 0.90 + 0.15);
+          let rz = 0.056 * Math.sin(t * Math.PI * 0.90 + 0.15);
+          let cz = 0.0;
+
+          const cosT = Math.cos(theta);
+          const sinT = Math.sin(theta);
+
+          // Chin projection
+          if (t < 0.20 && cosT > 0.5) {
+            rz += 0.012 * Math.pow(cosT, 3) * (1 - t / 0.20);
+          }
+
+          // Lips contour
+          if (t >= 0.20 && t <= 0.35 && cosT > 0.6) {
+            rz += 0.008 * Math.pow(cosT, 2);
+          }
+
+          // 3D Nose bridge & lobule tip
+          if (t >= 0.35 && t <= 0.60 && cosT > 0.7) {
+            const noseFactor = 1.0 - Math.abs((t - 0.46) / 0.14);
+            rz += 0.020 * Math.pow(cosT, 4) * Math.max(0, noseFactor);
+          }
+
+          // Orbital eye socket depressions
+          if (t >= 0.55 && t <= 0.70) {
+            const angleFromEyeL = Math.abs(theta - 0.42);
+            const angleFromEyeR = Math.abs(theta - (Math.PI * 2 - 0.42));
+            const eyeAngleDist = Math.min(angleFromEyeL, angleFromEyeR);
+            if (eyeAngleDist < 0.35) {
+              const socketDepth = (1.0 - eyeAngleDist / 0.35) * 0.010;
+              rz -= socketDepth;
+            }
+          }
+
+          // Brow ridge
+          if (t >= 0.68 && t <= 0.78 && cosT > 0.4) {
+            rz += 0.007 * Math.pow(cosT, 2);
+          }
+
+          return { x: rx * sinT, z: cz + rz * cosT };
+        }
+      });
+    }
+    const headGeo = createLoftedGeometry(headRings, 26);
+    const headMesh = new THREE.Mesh(headGeo, skinMaterial);
+    headMesh.castShadow = true;
+    headGroup.add(headMesh);
+
+    // Warm Smiling Lips & Mustache
+    const mustacheGeo = new THREE.TorusGeometry(0.016, 0.0045, 8, 18, Math.PI * 0.88);
+    mustacheGeo.rotateZ(Math.PI * 1.06);
+    mustacheGeo.scale(1.25, 0.75, 1.1);
+    const mustache = new THREE.Mesh(mustacheGeo, hairMaterial);
+    mustache.position.set(0, 0.095, 0.054);
+    headGroup.add(mustache);
+
+    // Realistic Eyes with Sclera, Iris, Pupil & Animated Eyelids
+    const eyeScleraGeo = new THREE.SphereGeometry(0.0055, 12, 12);
+    const eyeIrisGeo = new THREE.CircleGeometry(0.0032, 12);
+    const eyePupilGeo = new THREE.CircleGeometry(0.0014, 10);
+    const eyelidFoldGeo = new THREE.TorusGeometry(0.0062, 0.0012, 6, 12, Math.PI * 0.95);
+
+    // Left Eye
+    const leftEyeGroup = new THREE.Group();
+    leftEyeGroup.position.set(-0.020, 0.142, 0.046);
+    leftEyeGroup.add(new THREE.Mesh(eyeScleraGeo, eyeScleraMaterial));
+    const lIris = new THREE.Mesh(eyeIrisGeo, eyeIrisMaterial);
+    lIris.position.set(0, 0, 0.005);
+    leftEyeGroup.add(lIris);
+    const lPupil = new THREE.Mesh(eyePupilGeo, eyePupilMaterial);
+    lPupil.position.set(0, 0, 0.0058);
+    leftEyeGroup.add(lPupil);
+    headGroup.add(leftEyeGroup);
+
+    // Right Eye
+    const rightEyeGroup = new THREE.Group();
+    rightEyeGroup.position.set(0.020, 0.142, 0.046);
+    rightEyeGroup.add(new THREE.Mesh(eyeScleraGeo, eyeScleraMaterial));
+    const rIris = new THREE.Mesh(eyeIrisGeo, eyeIrisMaterial);
+    rIris.position.set(0, 0, 0.005);
+    rightEyeGroup.add(rIris);
+    const rPupil = new THREE.Mesh(eyePupilGeo, eyePupilMaterial);
+    rPupil.position.set(0, 0, 0.0058);
+    rightEyeGroup.add(rPupil);
+    headGroup.add(rightEyeGroup);
+
+    // Eyelids for Natural Blinking Animation
+    const eyelidGeo = new THREE.SphereGeometry(0.0060, 10, 8, 0, Math.PI * 2, 0, Math.PI * 0.5);
+    const leftEyelid = new THREE.Mesh(eyelidGeo, skinMaterial);
+    leftEyelid.position.set(-0.020, 0.142, 0.046);
+    leftEyelid.rotation.x = -Math.PI * 0.5; // Open
+    headGroup.add(leftEyelid);
+
+    const rightEyelid = new THREE.Mesh(eyelidGeo, skinMaterial);
+    rightEyelid.position.set(0.020, 0.142, 0.046);
+    rightEyelid.rotation.x = -Math.PI * 0.5; // Open
+    headGroup.add(rightEyelid);
+
+    // Eyebrows
+    const eyebrowGeo = new THREE.BoxGeometry(0.016, 0.003, 0.003);
+    const leftBrow = new THREE.Mesh(eyebrowGeo, hairMaterial);
+    leftBrow.position.set(-0.020, 0.156, 0.048);
+    leftBrow.rotation.z = -0.06;
+    headGroup.add(leftBrow);
+
+    const rightBrow = new THREE.Mesh(eyebrowGeo, hairMaterial);
+    rightBrow.position.set(0.020, 0.156, 0.048);
+    rightBrow.rotation.z = 0.06;
+    headGroup.add(rightBrow);
+
+    // Ears
+    const earGeo = new THREE.TorusGeometry(0.011, 0.0025, 6, 14, Math.PI * 1.35);
+    earGeo.rotateZ(-Math.PI * 0.15);
+    const leftEar = new THREE.Mesh(earGeo, skinMaterial);
+    leftEar.position.set(-0.046, 0.132, -0.008);
+    leftEar.rotation.y = -0.20;
+    headGroup.add(leftEar);
+
+    const rightEar = new THREE.Mesh(earGeo, skinMaterial);
+    rightEar.position.set(0.046, 0.132, -0.008);
+    rightEar.rotation.y = 0.20;
+    rightEar.scale.set(-1, 1, 1);
+    headGroup.add(rightEar);
+
+    // Coral-Red Turban (Multi-wrap spiral cloth wraps with front crest turra)
+    const turbanGroup = new THREE.Group();
+    headGroup.add(turbanGroup);
+
+    const pagriBase = new THREE.TorusGeometry(0.054, 0.018, 12, 26);
+    pagriBase.rotateX(Math.PI * 0.44);
+    pagriBase.rotateZ(-Math.PI * 0.06);
+    pagriBase.scale(1.04, 0.88, 1.14);
+    const tBase = new THREE.Mesh(pagriBase, turbanMaterial);
+    tBase.position.set(0, 0.165, 0);
+    tBase.castShadow = true;
+    turbanGroup.add(tBase);
+
+    const pagriTier1 = new THREE.TorusGeometry(0.050, 0.016, 12, 24);
+    pagriTier1.rotateX(Math.PI * 0.48);
+    pagriTier1.rotateZ(Math.PI * 0.12);
+    pagriTier1.scale(0.98, 0.84, 1.10);
+    const tTier1 = new THREE.Mesh(pagriTier1, turbanMaterial);
+    tTier1.position.set(0, 0.178, -0.006);
+    tTier1.castShadow = true;
+    turbanGroup.add(tTier1);
+
+    const pagriTier2 = new THREE.TorusGeometry(0.046, 0.014, 10, 22);
+    pagriTier2.rotateX(Math.PI * 0.40);
+    pagriTier2.rotateZ(-Math.PI * 0.08);
+    pagriTier2.scale(1.02, 0.80, 1.08);
+    const tTier2 = new THREE.Mesh(pagriTier2, turbanMaterial);
+    tTier2.position.set(0, 0.190, -0.010);
+    tTier2.castShadow = true;
+    turbanGroup.add(tTier2);
+
+    const pagriCrown = new THREE.SphereGeometry(0.048, 16, 16);
+    pagriCrown.scale(1.06, 0.68, 1.16);
+    const tCrown = new THREE.Mesh(pagriCrown, turbanMaterial);
+    tCrown.position.set(0, 0.186, -0.004);
+    tCrown.castShadow = true;
+    turbanGroup.add(tCrown);
+
+    // Pleated Front Crest (Turra)
+    const pagriTurraGeo = new THREE.CylinderGeometry(0.013, 0.005, 0.034, 8);
+    pagriTurraGeo.rotateX(Math.PI * 0.15);
+    pagriTurraGeo.rotateZ(Math.PI * 0.20);
+    const tTurra = new THREE.Mesh(pagriTurraGeo, turbanMaterial);
+    tTurra.position.set(-0.014, 0.222, 0.030);
+    tTurra.castShadow = true;
+    turbanGroup.add(tTurra);
+
+
+    // ── 8. ANIMATION LOOP & KINEMATICS ──
+
+    let autoOrbit = true;
+    let breezeEnabled = true;
+    const clock = new THREE.Clock();
+
+    // Natural Blinking State
+    let blinkTimer = 0;
+    let nextBlinkTime = 3.5;
+    let isBlinking = false;
+    let blinkProgress = 0;
+
+    // Head Micro-Tilt State
+    let targetHeadTiltX = 0;
+    let targetHeadTiltY = 0;
+    let targetHeadTiltZ = 0;
+    let tiltTimer = 0;
+
+    // Smooth Camera Targets
+    const camTargets = {
+      full: { pos: new THREE.Vector3(0, 1.12, 2.75), lookAt: new THREE.Vector3(0, 1.02, 0) },
+      portrait: { pos: new THREE.Vector3(0, 1.25, 1.35), lookAt: new THREE.Vector3(0, 1.22, 0) },
+      cinematic: { pos: new THREE.Vector3(-1.1, 1.15, 2.1), lookAt: new THREE.Vector3(0, 1.10, 0) }
+    };
+    let activeCamTarget = camTargets.full;
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const t = clock.getElapsedTime();
+      const delta = clock.getDelta();
+
+      // 1. Subtle Rhythmic Breathing Motion (Period ~3.8s)
+      const breath = Math.sin(t * 1.65) * 0.008;
+      torsoGroup.scale.set(1 + breath * 0.35, 1 + breath, 1 + breath * 0.35);
+      armsGroup.position.y = 0.28 + breath * 0.25;
+
+      // 2. Natural Slow Blinking Cycle (Every 3.5 - 5.0 seconds)
+      blinkTimer += 0.016;
+      if (!isBlinking && blinkTimer > nextBlinkTime) {
+        isBlinking = true;
+        blinkProgress = 0;
+        blinkTimer = 0;
+        nextBlinkTime = 3.2 + Math.random() * 2.2;
+      }
+
+      if (isBlinking) {
+        blinkProgress += 0.12;
+        // Blink ease: shut down, snap open
+        const blinkAmount = Math.sin(blinkProgress * Math.PI);
+        const eyelidRot = -Math.PI * 0.5 + blinkAmount * (Math.PI * 0.5);
+        leftEyelid.rotation.x = eyelidRot;
+        rightEyelid.rotation.x = eyelidRot;
+
+        if (blinkProgress >= 1.0) {
+          isBlinking = false;
+          leftEyelid.rotation.x = -Math.PI * 0.5;
+          rightEyelid.rotation.x = -Math.PI * 0.5;
+        }
+      }
+
+      // 3. Gentle Head Micro-Tilt (Living Human Presence)
+      tiltTimer += 0.016;
+      if (tiltTimer > 4.5) {
+        tiltTimer = 0;
+        targetHeadTiltX = (Math.random() - 0.5) * 0.04;
+        targetHeadTiltY = (Math.random() - 0.5) * 0.06;
+        targetHeadTiltZ = (Math.random() - 0.5) * 0.035;
+      }
+      headGroup.rotation.x += (targetHeadTiltX - headGroup.rotation.x) * 0.025;
+      headGroup.rotation.y += (targetHeadTiltY - headGroup.rotation.y) * 0.025;
+      headGroup.rotation.z += (targetHeadTiltZ - headGroup.rotation.z) * 0.025;
+
+      // 4. Breeze Cloth Sway (Turban Crest & Shirt)
+      if (breezeEnabled) {
+        const breezeWave = Math.sin(t * 2.2) * 0.035 + Math.sin(t * 4.8) * 0.012;
+        tTurra.rotation.z = Math.PI * 0.20 + breezeWave;
+        torsoMesh.rotation.y = Math.sin(t * 1.2) * 0.005;
+      } else {
+        tTurra.rotation.z += (Math.PI * 0.20 - tTurra.rotation.z) * 0.05;
+        torsoMesh.rotation.y += (0 - torsoMesh.rotation.y) * 0.05;
+      }
+
+      // 5. Floating Dust Motes Motion
+      const mPos = moteGeo.attributes.position.array;
+      for (let i = 0; i < moteCount * 3; i += 3) {
+        mPos[i + 1] += Math.sin(t + i) * 0.0012 + 0.0006;
+        mPos[i] += Math.cos(t * 0.5 + i) * 0.0008;
+        if (mPos[i + 1] > 3.5) mPos[i + 1] = 0.1;
+      }
+      moteGeo.attributes.position.needsUpdate = true;
+
+      // 6. Camera Orbit & Smooth Target Interpolation
+      if (autoOrbit) {
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.55;
+      } else {
+        controls.autoRotate = false;
+      }
+
+      // Smooth camera interpolation towards selected preset
+      camera.position.lerp(activeCamTarget.pos, 0.03);
+      controls.target.lerp(activeCamTarget.lookAt, 0.03);
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    // Hide Loader once initialized
+    setTimeout(() => {
+      const loader = document.getElementById('loader');
+      if (loader) {
+        loader.style.opacity = '0';
+        setTimeout(() => loader.remove(), 600);
+      }
+    }, 450);
+
+    animate();
+
+
+    // ── 9. INTERACTIVE UI CONTROLS ──
+
+    const orbitBtn = document.getElementById('orbit-btn');
+    orbitBtn.addEventListener('click', () => {
+      autoOrbit = !autoOrbit;
+      orbitBtn.classList.toggle('active', autoOrbit);
+    });
+
+    const breezeBtn = document.getElementById('breeze-btn');
+    breezeBtn.addEventListener('click', () => {
+      breezeEnabled = !breezeEnabled;
+      breezeBtn.classList.toggle('active', breezeEnabled);
+    });
+
+    // Camera Presets
+    const viewChips = document.querySelectorAll('.view-chip');
+    viewChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        viewChips.forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+        const camKey = chip.getAttribute('data-cam');
+        if (camTargets[camKey]) {
+          activeCamTarget = camTargets[camKey];
+        }
+      });
+    });
+
+    // Window Resize Handler
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    });
+
+  </script>
+</body>
+</html>

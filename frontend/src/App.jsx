@@ -9,7 +9,7 @@ import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
 
 // Pages
-import LandingPage from './pages/LandingPage';
+import LandingPage from './landing/LandingPage';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Fields from './pages/Fields';

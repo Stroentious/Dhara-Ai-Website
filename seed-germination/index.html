@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinematic Seed Germination — Botanical Cross-Section</title>
+  
+  <!-- Google Fonts for Botanical Typography & Modern UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- GSAP 3 & ScrollTrigger via Cloudflare CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       1. ROOT DESIGN SYSTEM & CSS VARIABLES
+       ========================================================================== */
+    :root {
+      --soil-deep: #090705;
+      --soil-mid: #140e0a;
+      --soil-rich: #1e150f;
+      --soil-warm: #2b1e15;
+      
+      --seed-shell-dark: #3e2210;
+      --seed-shell-mid: #683b1c;
+      --seed-shell-light: #9c6035;
+      --seed-shell-highlight: #c48352;
+      
+      --cotyledon-base: #526034;
+      --cotyledon-mid: #788c49;
+      --cotyledon-light: #9eb563;
+      
+      --root-cap: #f2ebd9;
+      --root-body: #e4d8be;
+      --root-deep: #b5a482;
+      
+      --shoot-dark: #1b5e20;
+      --shoot-vivid: #22c55e;
+      --shoot-glow: #4ade80;
+      --shoot-highlight: #a7f3d0;
+      
+      --gold-sun: rgba(253, 230, 138, 0.18);
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      background-color: var(--soil-deep);
+      color: #e2e8f0;
+      font-family: var(--font-sans);
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    /* ==========================================================================
+       2. CINEMATIC BACKGROUND & SOIL STRATA
+       ========================================================================== */
+    .intro-hero, .outro-section {
+      min-height: 70vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4rem 1.5rem;
+      position: relative;
+      z-index: 2;
+      background: radial-gradient(circle at 50% 100%, #1c140d 0%, #090705 75%);
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 1rem;
+      border-radius: 9999px;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #86efac;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2.5rem, 5.5vw, 4.2rem);
+      font-weight: 700;
+      line-height: 1.12;
+      color: #f8fafc;
+      max-width: 800px;
+      margin-bottom: 1rem;
+      letter-spacing: -0.01em;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 1.8vw, 1.25rem);
+      color: #94a3b8;
+      max-width: 580px;
+      line-height: 1.6;
+      font-weight: 300;
+    }
+
+    .scroll-hint {
+      margin-top: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      color: #64748b;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .scroll-arrow {
+      width: 20px;
+      height: 32px;
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      position: relative;
+    }
+
+    .scroll-arrow::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 7px;
+      background: #4ade80;
+      border-radius: 2px;
+      animation: wheelBounce 1.8s infinite ease-in-out;
+    }
+
+    @keyframes wheelBounce {
+      0%, 100% { transform: translate(-50%, 0); opacity: 0.3; }
+      50% { transform: translate(-50%, 10px); opacity: 1; }
+    }
+
+    /* ==========================================================================
+       3. PINNED GERMINATION SECTION
+       ========================================================================== */
+    .germination-viewport {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--soil-deep);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Soil Texture Layers */
+    .soil-texture-canvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      background: 
+        radial-gradient(ellipse at 50% 25%, rgba(45, 30, 20, 0.45) 0%, transparent 60%),
+        radial-gradient(circle at 50% 60%, rgba(20, 14, 10, 0.7) 0%, var(--soil-deep) 85%);
+    }
+
+    .soil-particles {
+      position: absolute;
+      inset: 0;
+      opacity: 0.42;
+      background-image: 
+        radial-gradient(1.5px 1.5px at 15% 20%, rgba(180, 140, 100, 0.45), transparent),
+        radial-gradient(2px 2px at 45% 35%, rgba(140, 100, 70, 0.3), transparent),
+        radial-gradient(1px 1px at 75% 15%, rgba(210, 180, 140, 0.4), transparent),
+        radial-gradient(2.5px 2.5px at 25% 70%, rgba(110, 80, 50, 0.35), transparent),
+        radial-gradient(1.5px 1.5px at 85% 65%, rgba(160, 120, 85, 0.4), transparent),
+        radial-gradient(2px 2px at 60% 85%, rgba(130, 95, 65, 0.3), transparent),
+        radial-gradient(1px 1px at 35% 90%, rgba(190, 150, 110, 0.3), transparent);
+      background-size: 320px 320px;
+    }
+
+    /* Cinematic Dramatic Top-Down Lighting */
+    .lighting-sunbeam {
+      position: absolute;
+      top: -10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 75vw;
+      max-width: 900px;
+      height: 85vh;
+      background: radial-gradient(ellipse at 50% 0%, 
+        rgba(254, 243, 199, 0.16) 0%, 
+        rgba(251, 191, 36, 0.08) 28%, 
+        rgba(74, 222, 128, 0.04) 55%, 
+        transparent 75%);
+      pointer-events: none;
+      z-index: 2;
+      filter: blur(24px);
+    }
+
+    .seed-cavity-vignette {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 520px;
+      height: 620px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 45%, 
+        rgba(104, 59, 28, 0.22) 0%, 
+        rgba(30, 21, 15, 0.35) 45%, 
+        transparent 75%);
+      pointer-events: none;
+      z-index: 2;
+      filter: blur(35px);
+    }
+
+    /* Ambient Seed Halo (Glows as seed wakes up) */
+    .seed-ambient-glow {
+      position: absolute;
+      top: 48%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(74, 222, 128, 0.18) 0%, rgba(34, 197, 94, 0.05) 50%, transparent 75%);
+      pointer-events: none;
+      z-index: 2;
+      filter: blur(30px);
+      opacity: 0.3;
+      transition: opacity 0.5s ease;
+    }
+
+    /* ==========================================================================
+       4. SVG CONTAINER & ANATOMICAL ILLUSTRATION
+       ========================================================================== */
+    .svg-container {
+      position: relative;
+      z-index: 3;
+      width: 92vw;
+      max-width: 760px;
+      height: 88vh;
+      max-height: 920px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .botanical-svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 20px 35px rgba(0, 0, 0, 0.85));
+      overflow: visible;
+    }
+
+    /* SVG Stroke & Fill Styles for Botanical Drawing */
+    .contour-seed-outer {
+      fill: url(#seedShellGrad);
+      stroke: #2b170a;
+      stroke-width: 2.2;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
+    }
+
+    .contour-cotyledon {
+      fill: url(#cotyledonGrad);
+      stroke: #3f4e24;
+      stroke-width: 1.6;
+      stroke-dasharray: 400;
+      stroke-dashoffset: 0;
+    }
+
+    .cellular-shading {
+      opacity: 0.38;
+      mix-blend-mode: multiply;
+    }
+
+    .root-path {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.45));
+    }
+
+    .primary-root {
+      stroke: url(#rootGrad);
+      stroke-width: 4.8;
+    }
+
+    .secondary-root {
+      stroke: url(#rootLateralGrad);
+      stroke-width: 2.4;
+    }
+
+    .fine-rootlet {
+      stroke: #d6caa8;
+      stroke-width: 1.2;
+      opacity: 0.75;
+    }
+
+    .stem-path {
+      fill: none;
+      stroke: url(#stemGrad);
+      stroke-width: 7.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.4));
+    }
+
+    .leaf-shape {
+      fill: url(#leafGrad);
+      stroke: #166534;
+      stroke-width: 1.6;
+      filter: drop-shadow(0 6px 14px rgba(34, 197, 94, 0.35));
+    }
+
+    .leaf-vein {
+      fill: none;
+      stroke: #86efac;
+      stroke-width: 1.1;
+      stroke-linecap: round;
+      opacity: 0.85;
+    }
+
+    /* ==========================================================================
+       5. BOTANICAL ANNOTATION CALLOUTS & STAGE OVERLAYS
+       ========================================================================== */
+    .stage-hud {
+      position: absolute;
+      top: 2rem;
+      left: 2rem;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      background: rgba(15, 12, 10, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(14px);
+      padding: 1rem 1.4rem;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .stage-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #86efac;
+      font-weight: 700;
+    }
+
+    .stage-title {
+      font-family: var(--font-serif);
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      line-height: 1.2;
+    }
+
+    .stage-desc {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      max-width: 240px;
+      line-height: 1.45;
+      font-weight: 300;
+    }
+
+    /* Progress Pill Bar */
+    .progress-track {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(18, 14, 11, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      backdrop-filter: blur(16px);
+      padding: 0.65rem 1.2rem;
+      border-radius: 9999px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+    }
+
+    .progress-step {
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 0.28rem 0.75rem;
+      border-radius: 9999px;
+      color: #64748b;
+      transition: all 0.35s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .progress-step.active {
+      background: rgba(34, 197, 94, 0.18);
+      color: #4ade80;
+      border: 1px solid rgba(74, 222, 128, 0.35);
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.25);
+    }
+
+    .progress-bar-container {
+      width: 110px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ca8a04, #22c55e, #4ade80);
+      border-radius: 9999px;
+      transition: width 0.08s linear;
+    }
+
+    /* Floating Scrub & Test Slider */
+    .controls-panel {
+      position: absolute;
+      top: 2rem;
+      right: 2rem;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      background: rgba(18, 14, 11, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(14px);
+      padding: 0.5rem 0.9rem;
+      border-radius: 12px;
+    }
+
+    .slider-label {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .scrub-slider {
+      width: 100px;
+      height: 4px;
+      accent-color: #22c55e;
+      cursor: pointer;
+    }
+
+    /* Anatomical Diagram Annotations in SVG */
+    .annotation-text {
+      font-family: var(--font-serif);
+      font-size: 13px;
+      font-style: italic;
+      fill: #cbd5e1;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      letter-spacing: 0.04em;
+    }
+
+    .annotation-line {
+      stroke: rgba(203, 213, 225, 0.35);
+      stroke-width: 0.9;
+      stroke-dasharray: 2 2;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    /* Outro Section */
+    .outro-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      max-width: 680px;
+      backdrop-filter: blur(10px);
+    }
+
+    @media (max-width: 768px) {
+      .stage-hud {
+        top: 1rem;
+        left: 1rem;
+        right: 1rem;
+        padding: 0.8rem 1rem;
+      }
+      .controls-panel {
+        display: none;
+      }
+      .progress-track {
+        bottom: 1rem;
+        padding: 0.4rem 0.8rem;
+        gap: 0.4rem;
+      }
+      .progress-step {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.5rem;
+      }
+      .progress-bar-container {
+        display: none;
+      }
+      .svg-container {
+        height: 75vh;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. INTRO HERO -->
+  <header class="intro-hero">
+    <div class="hero-badge">Autonomous Agriculture &bull; Botanical Dynamics</div>
+    <h1 class="hero-title">The Subterranean Genesis</h1>
+    <p class="hero-subtitle">
+      Scroll downward to witness the physiological sequence of seed imbibition, radicle geotropism, and phototropic cotyledon unfurling embedded in live earth.
+    </p>
+    <div class="scroll-hint">
+      <span>Scroll to Germinate</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </header>
+
+  <!-- 2. SCROLLTRIGGER PINNED SECTION -->
+  <section class="germination-section" id="germinationSection">
+    <div class="germination-viewport" id="germinationViewport">
+      
+      <!-- Background Soil & Strata -->
+      <div class="soil-texture-canvas">
+        <div class="soil-particles"></div>
+      </div>
+      
+      <!-- Top-Down Cinematic Lighting -->
+      <div class="lighting-sunbeam"></div>
+      <div class="seed-cavity-vignette"></div>
+      <div class="seed-ambient-glow" id="seedGlow"></div>
+
+      <!-- Stage HUD Overlay -->
+      <aside class="stage-hud" id="stageHud" aria-live="polite">
+        <span class="stage-label" id="hudStageNumber">Stage 1 of 4</span>
+        <h2 class="stage-title" id="hudStageTitle">Dormant Seed</h2>
+        <p class="stage-desc" id="hudStageDesc">
+          Quiescent embryo insulated inside the protective lignified testa awaiting thermal and moisture activation.
+        </p>
+      </aside>
+
+      <!-- Interactive Controls (Slider for quick testing) -->
+      <div class="controls-panel">
+        <span class="slider-label">Scrub</span>
+        <input type="range" class="scrub-slider" id="scrubSlider" min="0" max="1" step="0.001" value="0" aria-label="Scrub Germination Progress">
+      </div>
+
+      <!-- Progress Tracking Bar -->
+      <nav class="progress-track" aria-label="Germination Stages">
+        <div class="progress-step active" data-stage="1" id="step1">1 &bull; Dormant</div>
+        <div class="progress-step" data-stage="2" id="step2">2 &bull; Radicle</div>
+        <div class="progress-step" data-stage="3" id="step3">3 &bull; Roots &amp; Shoot</div>
+        <div class="progress-step" data-stage="4" id="step4">4 &bull; Unfurl</div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="progressBarFill"></div>
+        </div>
+      </nav>
+
+      <!-- 3. DETAILED BOTANICAL VECTOR EMBRYO & ROOT SYSTEM (SVG) -->
+      <div class="svg-container">
+        <svg class="botanical-svg" viewBox="0 0 900 1100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- Realistic Seed Outer Shell Gradient (Rich Warm Tan / Lignified Brown) -->
+            <radialGradient id="seedShellGrad" cx="38%" cy="40%" r="62%">
+              <stop offset="0%" stop-color="#ab6b3d" />
+              <stop offset="42%" stop-color="#7c4620" />
+              <stop offset="78%" stop-color="#4d2711" />
+              <stop offset="100%" stop-color="#281307" />
+            </radialGradient>
+
+            <!-- Inner Cotyledon Gradient (Pale Olive Green) -->
+            <radialGradient id="cotyledonGrad" cx="44%" cy="45%" r="58%">
+              <stop offset="0%" stop-color="#bcd279" />
+              <stop offset="38%" stop-color="#93a958" />
+              <stop offset="75%" stop-color="#647636" />
+              <stop offset="100%" stop-color="#3d491f" />
+            </radialGradient>
+
+            <!-- Taproot Gradient (Ivory Taper to Pale Earth Tone) -->
+            <linearGradient id="rootGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#fdfbf7" />
+              <stop offset="40%" stop-color="#ebe1cb" />
+              <stop offset="85%" stop-color="#c9b996" />
+              <stop offset="100%" stop-color="#a49372" />
+            </linearGradient>
+
+            <!-- Lateral Roots Gradient -->
+            <linearGradient id="rootLateralGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#f5ede0" />
+              <stop offset="60%" stop-color="#d9cca8" />
+              <stop offset="100%" stop-color="#ad9b79" />
+            </linearGradient>
+
+            <!-- Emerging Shoot / Hypocotyl Gradient (Vivid Chlorophyll Green) -->
+            <linearGradient id="stemGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+              <stop offset="0%" stop-color="#166534" />
+              <stop offset="30%" stop-color="#22c55e" />
+              <stop offset="70%" stop-color="#4ade80" />
+              <stop offset="100%" stop-color="#86efac" />
+            </linearGradient>
+
+            <!-- Cotyledon Foliar Leaf Gradient (Botanical Layered Green) -->
+            <radialGradient id="leafGrad" cx="35%" cy="30%" r="70%">
+              <stop offset="0%" stop-color="#86efac" />
+              <stop offset="35%" stop-color="#4ade80" />
+              <stop offset="75%" stop-color="#16a34a" />
+              <stop offset="100%" stop-color="#14532d" />
+            </radialGradient>
+
+            <!-- Soil Subsurface Shadow -->
+            <filter id="soilContactShadow" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="16" />
+              <feOffset dx="0" dy="18" result="offsetblur" />
+              <feComponentTransfer>
+                <feFuncA type="linear" slope="0.8" />
+              </feComponentTransfer>
+              <feMerge>
+                <feMergeNode />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
+          <!-- ═════════════════════════════════════════════════════════════════
+               A. ROOT SYSTEM (Taproot & Multi-tier Lateral Branches)
+               ═════════════════════════════════════════════════════════════════ -->
+          <g id="rootSystemGroup" filter="url(#soilContactShadow)">
+            
+            <!-- Microscopic Fine Rootlet Fibers (Sprouts from Taproot) -->
+            <g id="fineRootlets" opacity="0">
+              <path class="root-path fine-rootlet" d="M 445,640 C 428,642 415,648 402,654" />
+              <path class="root-path fine-rootlet" d="M 453,660 C 472,663 486,669 498,677" />
+              <path class="root-path fine-rootlet" d="M 444,710 C 424,715 408,724 394,735" />
+              <path class="root-path fine-rootlet" d="M 454,730 C 476,736 496,747 512,760" />
+              <path class="root-path fine-rootlet" d="M 446,785 C 430,795 418,808 406,822" />
+              <path class="root-path fine-rootlet" d="M 452,810 C 470,820 488,834 502,850" />
+              <path class="root-path fine-rootlet" d="M 447,870 C 432,882 420,896 412,912" />
+              <path class="root-path fine-rootlet" d="M 451,890 C 466,902 480,918 488,935" />
+            </g>
+
+            <!-- Secondary Lateral Branches (Tier 1 to Tier 3) -->
+            <g id="secondaryRoots">
+              <!-- Upper Left Lateral -->
+              <path id="latRootL1" class="root-path secondary-root" d="M 448,630 C 425,645 392,662 368,680 C 348,695 332,718 318,742" />
+              <!-- Upper Right Lateral -->
+              <path id="latRootR1" class="root-path secondary-root" d="M 452,650 C 478,662 512,676 535,694 C 556,710 572,735 584,760" />
+              <!-- Mid Left Lateral -->
+              <path id="latRootL2" class="root-path secondary-root" d="M 447,725 C 422,745 388,772 364,800 C 348,820 336,845 328,870" />
+              <!-- Mid Right Lateral -->
+              <path id="latRootR2" class="root-path secondary-root" d="M 452,755 C 475,775 508,802 526,832 C 540,858 548,886 552,912" />
+              <!-- Lower Left Lateral -->
+              <path id="latRootL3" class="root-path secondary-root" d="M 448,820 C 432,845 410,876 392,908 C 380,928 372,952 368,975" />
+              <!-- Lower Right Lateral -->
+              <path id="latRootR3" class="root-path secondary-root" d="M 451,850 C 465,876 485,908 498,938 C 508,960 514,982 518,1005" />
+            </g>
+
+            <!-- Primary Radicle / Taproot Path (Draws downward with geotropism) -->
+            <path id="primaryRadicle" class="root-path primary-root" d="M 450,560 C 448,610 454,670 448,735 C 442,800 452,870 450,960 C 449,990 448,1020 447,1050" />
+            
+            <!-- Root Tip Meristem Cap (Subtle swelling at leading tip) -->
+            <circle id="rootCap" cx="450" cy="560" r="3.2" fill="#fffdec" opacity="0" />
+          </g>
+
+          <!-- ═════════════════════════════════════════════════════════════════
+               B. THE SEED ANATOMY (Testa, Hilum, Cotyledons)
+               ═════════════════════════════════════════════════════════════════ -->
+          <g id="seedGroup" filter="url(#soilContactShadow)">
+            
+            <!-- Outer Seed Shell Shadow Base -->
+            <ellipse cx="450" cy="485" rx="88" ry="110" fill="#180e07" opacity="0.6" filter="blur(8px)" />
+
+            <!-- Inner Embryo / Cotyledon Tissue (Revealed when coat splits) -->
+            <g id="cotyledonInner">
+              <!-- Left Cotyledon Half -->
+              <path id="cotyledonLeft" class="contour-cotyledon" d="M 448,390 C 400,392 375,425 372,480 C 370,530 405,568 448,570 C 448,510 446,450 448,390 Z" />
+              <!-- Right Cotyledon Half -->
+              <path id="cotyledonRight" class="contour-cotyledon" d="M 452,390 C 500,392 525,425 528,480 C 530,530 495,568 452,570 C 452,510 454,450 452,390 Z" />
+              
+              <!-- Cotyledon Vascular Micro-Veins -->
+              <path d="M 448,480 C 425,470 405,475 390,485" stroke="#5d6f30" stroke-width="1.2" fill="none" opacity="0.6" />
+              <path d="M 448,515 C 428,512 410,522 398,536" stroke="#5d6f30" stroke-width="1.2" fill="none" opacity="0.6" />
+              <path d="M 452,480 C 475,470 495,475 510,485" stroke="#5d6f30" stroke-width="1.2" fill="none" opacity="0.6" />
+              <path d="M 452,515 C 472,512 490,522 502,536" stroke="#5d6f30" stroke-width="1.2" fill="none" opacity="0.6" />
+            </g>
+
+            <!-- Outer Lignified Testa (Seed Coat) Left Half -->
+            <path id="seedCoatLeft" class="contour-seed-outer" d="M 450,378 C 390,380 358,422 355,482 C 352,538 392,580 450,582 C 435,525 432,440 450,378 Z" />
+
+            <!-- Outer Lignified Testa (Seed Coat) Right Half -->
+            <path id="seedCoatRight" class="contour-seed-outer" d="M 450,378 C 510,380 542,422 545,482 C 548,538 508,580 450,582 C 465,525 468,440 450,378 Z" />
+
+            <!-- Hilum Scar / Micropyle Depression -->
+            <g id="hilumScar">
+              <ellipse cx="450" cy="576" rx="9" ry="4.5" fill="#201107" />
+              <ellipse cx="450" cy="576" rx="6" ry="2.8" fill="#542e14" />
+            </g>
+
+            <!-- Seed Coat Organic Texturing / Stippling -->
+            <g id="seedStippling" opacity="0.45">
+              <circle cx="395" cy="440" r="1.4" fill="#d99b68" />
+              <circle cx="410" cy="425" r="1.1" fill="#d99b68" />
+              <circle cx="380" cy="470" r="1.6" fill="#2d170b" />
+              <circle cx="400" cy="500" r="1.3" fill="#2d170b" />
+              <circle cx="495" cy="445" r="1.5" fill="#d99b68" />
+              <circle cx="515" cy="475" r="1.2" fill="#2d170b" />
+              <circle cx="488" cy="515" r="1.4" fill="#d99b68" />
+            </g>
+          </g>
+
+          <!-- ═════════════════════════════════════════════════════════════════
+               C. EMERGING SHOOT, STEM & UNFURLING COTYLEDON LEAVES
+               ═════════════════════════════════════════════════════════════════ -->
+          <g id="shootSystemGroup" filter="url(#soilContactShadow)">
+            
+            <!-- Hypocotyl Stem (Extends upward through seed coat) -->
+            <path id="stemPath" class="stem-path" d="M 450,470 C 449,410 445,340 450,270 C 454,200 448,150 450,110" />
+
+            <!-- Foliar Node / Terminal Plumule -->
+            <g id="plumuleNode" transform="translate(450, 110)">
+              
+              <!-- Left Unfurling Leaf (Origin at stem junction) -->
+              <g id="leafLeftGroup" style="transform-origin: 0px 0px;">
+                <!-- Main Blade -->
+                <path class="leaf-shape" d="M 0,0 C -35,-20 -75,-35 -115,-40 C -95,-10 -60,25 0,10 Z" />
+                <!-- Central Midrib & Lateral Veins -->
+                <path class="leaf-vein" d="M 0,0 C -40,-15 -80,-28 -112,-38" />
+                <path class="leaf-vein" d="M -30,-11 C -42,-3 -48,8 -52,16" />
+                <path class="leaf-vein" d="M -60,-22 C -72,-16 -80,-4 -85,5" />
+              </g>
+
+              <!-- Right Unfurling Leaf (Origin at stem junction) -->
+              <g id="leafRightGroup" style="transform-origin: 0px 0px;">
+                <!-- Main Blade -->
+                <path class="leaf-shape" d="M 0,0 C 35,-20 75,-35 115,-40 C 95,-10 60,25 0,10 Z" />
+                <!-- Central Midrib & Lateral Veins -->
+                <path class="leaf-vein" d="M 0,0 C 40,-15 80,-28 112,-38" />
+                <path class="leaf-vein" d="M 30,-11 C 42,-3 48,8 52,16" />
+                <path class="leaf-vein" d="M 60,-22 C 72,-16 80,-4 85,5" />
+              </g>
+
+              <!-- Central Apical Bud (Epicotyl primordium) -->
+              <path id="apicalBud" d="M 0,0 C -6,-15 -4,-28 0,-34 C 4,-28 6,-15 0,0 Z" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.2" />
+            </g>
+          </g>
+
+          <!-- ═════════════════════════════════════════════════════════════════
+               D. BOTANICAL LABELS & POINTERS (Dynamic Diagram Mode)
+               ═════════════════════════════════════════════════════════════════ -->
+          <g id="botanicalLabelsGroup" pointer-events="none">
+            <!-- Label 1: Testa (Seed Coat) -->
+            <line id="lineTesta" class="annotation-line" x1="330" y1="450" x2="370" y2="465" />
+            <text id="lblTesta" class="annotation-text" x="250" y="445">Lignified Testa</text>
+
+            <!-- Label 2: Radicle -->
+            <line id="lineRadicle" class="annotation-line" x1="530" y1="620" x2="455" y2="600" />
+            <text id="lblRadicle" class="annotation-text" x="540" y="625">Primary Radicle</text>
+
+            <!-- Label 3: Lateral Roots -->
+            <line id="lineLateral" class="annotation-line" x1="280" y1="760" x2="350" y2="765" />
+            <text id="lblLateral" class="annotation-text" x="180" y="758">Lateral Secondary Roots</text>
+
+            <!-- Label 4: Hypocotyl Shoot -->
+            <line id="lineHypocotyl" class="annotation-line" x1="330" y1="280" x2="445" y2="295" />
+            <text id="lblHypocotyl" class="annotation-text" x="240" y="275">Hypocotyl Arch</text>
+
+            <!-- Label 5: Cotyledons / Foliar Leaves -->
+            <line id="lineLeaves" class="annotation-line" x1="570" y1="85" x2="490" y2="95" />
+            <text id="lblLeaves" class="annotation-text" x="580" y="85">Cotyledon Leaves</text>
+          </g>
+        </svg>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 4. OUTRO / RECEPTIVE SOIL SECTION -->
+  <footer class="outro-section">
+    <div class="outro-card">
+      <div class="hero-badge">Vegetative Architecture Active</div>
+      <h2 class="hero-title" style="font-size: clamp(2rem, 3.5vw, 2.8rem);">Vigorous Establishment</h2>
+      <p class="hero-subtitle" style="margin-bottom: 2rem;">
+        With the primary taproot anchored deep within the moisture strata and photosynthetic cotyledons unfurled to capture solar irradiance, the crop enters autonomous vegetative expansion.
+      </p>
+      <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" style="
+        background: rgba(34, 197, 94, 0.15);
+        border: 1px solid rgba(74, 222, 128, 0.4);
+        color: #86efac;
+        padding: 0.75rem 1.6rem;
+        border-radius: 9999px;
+        font-family: var(--font-sans);
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      ">
+        &uarr; Return to Seed Dormancy
+      </button>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       5. GSAP + SCROLLTRIGGER ANIMATION ENGINE
+       ========================================================================== */
+  -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Ensure GSAP & ScrollTrigger Plugins are loaded
+      if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+        console.error('GSAP or ScrollTrigger failed to load.');
+        return;
+      }
+      gsap.registerPlugin(ScrollTrigger);
+
+      // 2. Select Animated SVG Elements
+      const primaryRadicle = document.getElementById('primaryRadicle');
+      const rootCap        = document.getElementById('rootCap');
+      const secondaryRoots = document.querySelectorAll('#secondaryRoots path');
+      const fineRootlets   = document.getElementById('fineRootlets');
+      
+      const seedCoatLeft   = document.getElementById('seedCoatLeft');
+      const seedCoatRight  = document.getElementById('seedCoatRight');
+      const seedGlow       = document.getElementById('seedGlow');
+      
+      const stemPath       = document.getElementById('stemPath');
+      const leafLeftGroup  = document.getElementById('leafLeftGroup');
+      const leafRightGroup = document.getElementById('leafRightGroup');
+      const apicalBud      = document.getElementById('apicalBud');
+      
+      // Annotations
+      const annotations = [
+        { line: document.getElementById('lineTesta'), text: document.getElementById('lblTesta') },
+        { line: document.getElementById('lineRadicle'), text: document.getElementById('lblRadicle') },
+        { line: document.getElementById('lineLateral'), text: document.getElementById('lblLateral') },
+        { line: document.getElementById('lineHypocotyl'), text: document.getElementById('lblHypocotyl') },
+        { line: document.getElementById('lineLeaves'), text: document.getElementById('lblLeaves') },
+      ];
+
+      // HUD & Progress elements
+      const hudNumber = document.getElementById('hudStageNumber');
+      const hudTitle  = document.getElementById('hudStageTitle');
+      const hudDesc   = document.getElementById('hudStageDesc');
+      const progressFill = document.getElementById('progressBarFill');
+      const stepPills = [
+        document.getElementById('step1'),
+        document.getElementById('step2'),
+        document.getElementById('step3'),
+        document.getElementById('step4')
+      ];
+
+      // 3. Measure & Prepare Exact Path Stroke Lengths (Draw-On Animation Setup)
+      function initPath(path) {
+        if (!path) return 0;
+        const length = path.getTotalLength();
+        path.style.strokeDasharray = length;
+        path.style.strokeDashoffset = length;
+        return length;
+      }
+
+      const radicleLength = initPath(primaryRadicle);
+      const stemLength    = initPath(stemPath);
+      secondaryRoots.forEach(path => initPath(path));
+
+      // Initial Leaf State: collapsed into plumule center (scale: 0, rotation closed)
+      gsap.set(leafLeftGroup, { scale: 0, rotation: 32, transformOrigin: '0% 0%' });
+      gsap.set(leafRightGroup, { scale: 0, rotation: -32, transformOrigin: '0% 0%' });
+      gsap.set(apicalBud, { scale: 0.1, transformOrigin: '50% 100%' });
+
+      // 4. Construct Master ScrollTrigger Scrub Timeline
+      // Total timeline normalized from progress 0.00 to 1.00
+      const masterTL = gsap.timeline({
+        paused: true,
+        defaults: { ease: 'none' }
+      });
+
+      /* ─────────────────────────────────────────────────────────────
+         STAGE 1 (0.00 -> 0.20): DORMANT SEED IN EARTH
+         Subtle ambient breathing halo, dormant seed resting in soil cavity
+         ───────────────────────────────────────────────────────────── */
+      masterTL
+        // Ambient glow gentle pulse
+        .to(seedGlow, {
+          opacity: 0.45,
+          scale: 1.12,
+          duration: 0.20,
+          ease: 'power1.inOut'
+        }, 0.00)
+        // Dormancy annotation fades in and out softly
+        .to([annotations[0].line, annotations[0].text], {
+          opacity: 0.9,
+          duration: 0.10
+        }, 0.04)
+        .to([annotations[0].line, annotations[0].text], {
+          opacity: 0,
+          duration: 0.06
+        }, 0.18);
+
+      /* ─────────────────────────────────────────────────────────────
+         STAGE 2 (0.20 -> 0.40): SEED COAT SPLITS & RADICLE EMERGES
+         Coat halves part outward; tiny pale root cap & radicle emerge downward
+         ───────────────────────────────────────────────────────────── */
+      masterTL
+        // Seed coat splits at hilum and opens outward
+        .to(seedCoatLeft, {
+          x: -14,
+          rotation: -3.5,
+          transformOrigin: '20% 90%',
+          duration: 0.20,
+          ease: 'power1.out'
+        }, 0.20)
+        .to(seedCoatRight, {
+          x: 14,
+          rotation: 3.5,
+          transformOrigin: '80% 90%',
+          duration: 0.20,
+          ease: 'power1.out'
+        }, 0.20)
+        
+        // Root cap appears at micropyle
+        .to(rootCap, {
+          opacity: 1,
+          scale: 1.4,
+          duration: 0.05
+        }, 0.20)
+
+        // Primary radicle emerges downward (first 30% of stroke length)
+        .to(primaryRadicle, {
+          strokeDashoffset: radicleLength * 0.70,
+          duration: 0.20,
+          ease: 'power1.inOut'
+        }, 0.20)
+        
+        // Root cap tracks radicle tip
+        .to(rootCap, {
+          cx: 449,
+          cy: 700,
+          duration: 0.20
+        }, 0.20)
+
+        // Radicle annotation
+        .to([annotations[1].line, annotations[1].text], {
+          opacity: 0.9,
+          duration: 0.10
+        }, 0.24)
+        .to([annotations[1].line, annotations[1].text], {
+          opacity: 0,
+          duration: 0.06
+        }, 0.38);
+
+      /* ─────────────────────────────────────────────────────────────
+         STAGE 3 (0.40 -> 0.70): ROOT BRANCHING & SHOOT PUSHES UPWARD
+         Primary root plunges deep; secondary lateral roots branch;
+         Hypocotyl shoot begins pushing upward through seed coat
+         ───────────────────────────────────────────────────────────── */
+      masterTL
+        // Primary radicle reaches full depth in soil
+        .to(primaryRadicle, {
+          strokeDashoffset: 0,
+          duration: 0.28,
+          ease: 'power2.out'
+        }, 0.40)
+        
+        // Root cap travels to bottom
+        .to(rootCap, {
+          cx: 447,
+          cy: 1048,
+          opacity: 0,
+          duration: 0.28
+        }, 0.40)
+
+        // Secondary lateral roots branch outward sequentially
+        .to(secondaryRoots, {
+          strokeDashoffset: 0,
+          duration: 0.26,
+          stagger: 0.03,
+          ease: 'power1.out'
+        }, 0.44)
+
+        // Microscopic rootlets become visible
+        .to(fineRootlets, {
+          opacity: 0.9,
+          duration: 0.20
+        }, 0.48)
+
+        // Seed coat parts a bit further as shoot pushes out
+        .to(seedCoatLeft, {
+          x: -22,
+          rotation: -5.5,
+          duration: 0.25
+        }, 0.42)
+        .to(seedCoatRight, {
+          x: 22,
+          rotation: 5.5,
+          duration: 0.25
+        }, 0.42)
+
+        // Shoot (Hypocotyl) grows upward (draw-on through first 50% of path)
+        .to(stemPath, {
+          strokeDashoffset: stemLength * 0.45,
+          duration: 0.30,
+          ease: 'power2.inOut'
+        }, 0.40)
+
+        // Ambient glow shifts to vivid emerald
+        .to(seedGlow, {
+          opacity: 0.65,
+          scale: 1.35,
+          duration: 0.30
+        }, 0.40)
+
+        // Stage 3 annotations
+        .to([annotations[2].line, annotations[2].text], {
+          opacity: 0.9,
+          duration: 0.12
+        }, 0.45)
+        .to([annotations[2].line, annotations[2].text], {
+          opacity: 0,
+          duration: 0.06
+        }, 0.66)
+        
+        .to([annotations[3].line, annotations[3].text], {
+          opacity: 0.9,
+          duration: 0.12
+        }, 0.52)
+        .to([annotations[3].line, annotations[3].text], {
+          opacity: 0,
+          duration: 0.06
+        }, 0.68);
+
+      /* ─────────────────────────────────────────────────────────────
+         STAGE 4 (0.70 -> 1.00): STEM ELONGATION & COTYLEDONS UNFURL
+         Stem reaches light; two foliar leaves unfurl with rotation & scale
+         ───────────────────────────────────────────────────────────── */
+      masterTL
+        // Stem elongates to full height
+        .to(stemPath, {
+          strokeDashoffset: 0,
+          duration: 0.30,
+          ease: 'power2.out'
+        }, 0.70)
+
+        // Apical bud swells
+        .to(apicalBud, {
+          scale: 1,
+          duration: 0.25,
+          ease: 'power2.out'
+        }, 0.72)
+
+        // Left Leaf Unfurls: scales from 0 to 1 with graceful rotation easing (power2.out)
+        .to(leafLeftGroup, {
+          scale: 1,
+          rotation: -14,
+          duration: 0.28,
+          ease: 'power2.out'
+        }, 0.72)
+
+        // Right Leaf Unfurls: symmetric natural opening
+        .to(leafRightGroup, {
+          scale: 1,
+          rotation: 14,
+          duration: 0.28,
+          ease: 'power2.out'
+        }, 0.72)
+
+        // Vivid photosynthesis glow intensifies
+        .to(seedGlow, {
+          opacity: 0.85,
+          scale: 1.6,
+          duration: 0.30
+        }, 0.70)
+
+        // Foliar leaf annotation
+        .to([annotations[4].line, annotations[4].text], {
+          opacity: 0.95,
+          duration: 0.15
+        }, 0.78);
+
+      // 5. Connect Timeline to GSAP ScrollTrigger with Pinning & Scrubbing
+      const trigger = ScrollTrigger.create({
+        trigger: '#germinationSection',
+        start: 'top top',
+        end: '+=350%', // 3.5x viewport scroll distance for buttery-smooth scrubbing
+        pin: true,
+        animation: masterTL,
+        scrub: 1.0,    // 1-second momentum smoothing
+        anticipatePin: 1,
+        onUpdate: (self) => {
+          const progress = self.progress;
+
+          // Update Progress Bar
+          progressFill.style.width = `${(progress * 100).toFixed(1)}%`;
+          scrubSlider.value = progress;
+
+          // Update Stage HUD & Active Navigation Pills
+          updateStageHUD(progress);
+        }
+      });
+
+      // Stage Texts & Metadata
+      const stageData = [
+        {
+          num: 'Stage 1 of 4',
+          title: 'Dormant Seed',
+          desc: 'Quiescent embryo insulated inside the protective lignified testa awaiting thermal and moisture activation.'
+        },
+        {
+          num: 'Stage 2 of 4',
+          title: 'Imbibition & Radicle',
+          desc: 'Moisture uptake swells the cotyledons; the outer seed coat splits open and a pale primary radicle emerges downward.'
+        },
+        {
+          num: 'Stage 3 of 4',
+          title: 'Root Branching & Shoot',
+          desc: 'Taproot establishes gravitropic anchorage and lateral rootlets branch while the hypocotyl arch arches upward.'
+        },
+        {
+          num: 'Stage 4 of 4',
+          title: 'Cotyledons Unfurling',
+          desc: 'The hypocotyl straightens toward the light; two embryonic cotyledons unfurl into active photosynthetic solar traps.'
+        }
+      ];
+
+      let currentStageIndex = -1;
+
+      function updateStageHUD(progress) {
+        let index = 0;
+        if (progress >= 0.70) {
+          index = 3;
+        } else if (progress >= 0.40) {
+          index = 2;
+        } else if (progress >= 0.20) {
+          index = 1;
+        } else {
+          index = 0;
+        }
+
+        if (index !== currentStageIndex) {
+          currentStageIndex = index;
+          const data = stageData[index];
+          
+          hudNumber.textContent = data.num;
+          hudTitle.textContent  = data.title;
+          hudDesc.textContent   = data.desc;
+
+          stepPills.forEach((pill, i) => {
+            if (i === index) {
+              pill.classList.add('active');
+            } else {
+              pill.classList.remove('active');
+            }
+          });
+        }
+      }
+
+      // 6. Interactive Clickable Step Pills (Jump to specific stage in scroll)
+      stepPills.forEach((pill, index) => {
+        pill.addEventListener('click', () => {
+          const targets = [0.05, 0.30, 0.55, 0.88];
+          const targetProgress = targets[index];
+          
+          const scrollDistance = trigger.end - trigger.start;
+          const scrollTarget = trigger.start + scrollDistance * targetProgress;
+          
+          window.scrollTo({
+            top: scrollTarget,
+            behavior: 'smooth'
+          });
+        });
+      });
+
+      // 7. Interactive Scrub Slider Control
+      const scrubSlider = document.getElementById('scrubSlider');
+      scrubSlider.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        const scrollDistance = trigger.end - trigger.start;
+        const scrollTarget = trigger.start + scrollDistance * val;
+        window.scrollTo({
+          top: scrollTarget,
+          behavior: 'auto'
+        });
+      });
+    });
+  </script>
+</body>
+</html>
