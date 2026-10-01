@@ -1,30 +1,65 @@
 import React, { useState, useEffect } from 'react';
 import { useField } from '../context/FieldContext';
+import { useLanguage } from '../context/LanguageContext';
 import MetricCard from '../components/MetricCard';
 import StatusBadge from '../components/StatusBadge';
-import AlertItem from '../components/AlertItem';
-import { mockSensorReading, mockHistory, mockWeather, mockAlerts } from '../data/mockData';
-import { Droplets, Thermometer, Beaker, FlaskConical, Zap, CloudSun, Leaf } from 'lucide-react';
+import { mockSensorReading, mockHistory, mockWeather } from '../data/mockData';
+import { Droplets, Thermometer, Beaker, FlaskConical, Zap, CloudSun } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+
+const CROP_MAP_HI = {
+  'Wheat': 'गेहूं',
+  'Rice': 'धान',
+  'Cotton': 'कपास',
+  'Corn': 'मक्का',
+  'Maize': 'मक्का',
+  'Soybean': 'सोयाबीन',
+  'Mustard': 'सरसों',
+  'Sugarcane': 'गन्ना',
+  'Tomato': 'टमाटर',
+  'Potato': 'आलू',
+};
+
+const DESC_MAP_HI = {
+  'Sunny': 'धूप खिली हुई',
+  'Partly Cloudy': 'आंशिक बादल',
+  'Cloudy': 'बादल छाए रहेंगे',
+  'Light Rain': 'हल्की बारिश',
+  'Rain': 'बारिश',
+  'Clear': 'साफ़ मौसम',
+  'Scattered Showers': 'रुक-रुक कर बारिश',
+};
+
+const DAY_MAP_HI = {
+  'Mon': 'सोम',
+  'Tue': 'मंगल',
+  'Wed': 'बुध',
+  'Thu': 'गुरु',
+  'Fri': 'शुक्र',
+  'Sat': 'शनि',
+  'Sun': 'रवि',
+  'Today': 'आज',
+  'Tomorrow': 'कल',
+};
 
 const Dashboard = () => {
   const { selectedField } = useField();
+  const { t, language, tCrop, tWeather, tDay } = useLanguage();
+  const isHi = language !== 'en';
   const [reading, setReading] = useState(null);
   const [history, setHistory] = useState([]);
   const [weather, setWeather] = useState(null);
-  const [alerts, setAlerts] = useState([]);
 
   useEffect(() => {
     // In real app, fetch from API. Using mock data for reliable demo
     setReading(mockSensorReading);
     setHistory(mockHistory.slice(-24)); // Last 24 hours
     setWeather(mockWeather);
-    setAlerts(mockAlerts);
     
     // Set page title (would normally be in Layout, but handled here via document for simplicity)
     const headerTitle = document.querySelector('.page-title');
-    if (headerTitle) headerTitle.textContent = 'Dashboard';
-  }, [selectedField]);
+    if (headerTitle) headerTitle.textContent = t('nav.dashboard');
+  }, [selectedField, t]);
 
   if (!selectedField || !reading) return null;
 
@@ -32,38 +67,106 @@ const Dashboard = () => {
     <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       
       {/* Row 1: Field Info Header */}
-      <div className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+      <div data-tour="field-header" className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h2 style={{ margin: '0 0 0.25rem 0' }}>{selectedField.name}</h2>
           <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            {selectedField.crop_type} • {selectedField.location} • {selectedField.area_hectares} ha
+            {tCrop(selectedField.crop_type)} • {selectedField.location} • {selectedField.area_hectares} {t('dashboard.hectares')}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <div style={{ textAlign: 'right' }}>
-            <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>Last Update</p>
-            <p style={{ margin: 0, fontSize: '0.875rem' }}>{new Date(reading.timestamp).toLocaleTimeString()}</p>
+            <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              {t('dashboard.lastUpdate')}
+            </p>
+            <p style={{ margin: 0, fontSize: '0.875rem' }}>
+              {new Date(reading.timestamp).toLocaleTimeString(`${language}-IN`)}
+            </p>
           </div>
-          <StatusBadge status={reading.device_status} label="Sensor Online" />
+          <StatusBadge status={reading.device_status} label={t('dashboard.sensorOnline')} />
         </div>
       </div>
 
       {/* Row 2: KPI Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
-        <MetricCard title="Soil Moisture" value={reading.soil_moisture.toFixed(1)} unit="%" icon={Droplets} color="blue" trend="down" trendValue="2%" />
-        <MetricCard title="Soil Temp" value={reading.soil_temperature.toFixed(1)} unit="°C" icon={Thermometer} color="amber" />
-        <MetricCard title="pH Level" value={reading.ph.toFixed(1)} unit="" icon={Beaker} color="green" />
-        <MetricCard title="Nitrogen (N)" value={reading.nitrogen.toFixed(0)} unit="mg/kg" icon={FlaskConical} color="green" trend="up" trendValue="5%" />
-        <MetricCard title="Phosphorus (P)" value={reading.phosphorus.toFixed(0)} unit="mg/kg" icon={FlaskConical} color="amber" trend="down" trendValue="1%" />
-        <MetricCard title="Potassium (K)" value={reading.potassium.toFixed(0)} unit="mg/kg" icon={FlaskConical} color="green" />
-        <MetricCard title="Elec. Cond (EC)" value={reading.ec.toFixed(1)} unit="dS/m" icon={Zap} color="amber" />
-        <MetricCard title="Water Supplied" value="2,450" unit="L" icon={Droplets} color="blue" />
+      <div data-tour="kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+        <div data-tour="soil-moisture">
+          <MetricCard
+            title={t('dashboard.soilMoisture')}
+            value={reading.soil_moisture.toFixed(1)}
+            unit="%"
+            icon={Droplets}
+            color="blue"
+            trend="down"
+            trendValue="2%"
+          />
+        </div>
+        <MetricCard
+          title={t('dashboard.soilTemp')}
+          value={reading.soil_temperature.toFixed(1)}
+          unit="°C"
+          icon={Thermometer}
+          color="amber"
+        />
+        <MetricCard
+          title={t('dashboard.phLevel')}
+          value={reading.ph.toFixed(1)}
+          unit=""
+          icon={Beaker}
+          color="green"
+        />
+        <div data-tour="npk-sensor">
+          <MetricCard
+            title={t('dashboard.nitrogen')}
+            value={reading.nitrogen.toFixed(0)}
+            unit="mg/kg"
+            icon={FlaskConical}
+            color="green"
+            trend="up"
+            trendValue="5%"
+          />
+        </div>
+        <MetricCard
+          title={t('dashboard.phosphorus')}
+          value={reading.phosphorus.toFixed(0)}
+          unit="mg/kg"
+          icon={FlaskConical}
+          color="amber"
+          trend="down"
+          trendValue="1%"
+        />
+        <MetricCard
+          title={t('dashboard.potassium')}
+          value={reading.potassium.toFixed(0)}
+          unit="mg/kg"
+          icon={FlaskConical}
+          color="green"
+        />
+        <div data-tour="lora">
+          <MetricCard
+            title={t('dashboard.ec')}
+            value={reading.ec.toFixed(1)}
+            unit="dS/m"
+            icon={Zap}
+            color="amber"
+          />
+        </div>
+        <div data-tour="water">
+          <MetricCard
+            title={t('dashboard.waterSupplied')}
+            value="2,450"
+            unit="L"
+            icon={Droplets}
+            color="blue"
+          />
+        </div>
       </div>
 
       {/* Row 3: Charts */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1rem' }}>
-        <div className="glass-card">
-          <h3 style={{ fontSize: '1rem', marginBottom: '1rem' }}>Moisture & Temperature (24h)</h3>
+        <div data-tour="moisture-chart" className="glass-card">
+          <h3 style={{ fontSize: '1rem', marginBottom: '1rem' }}>
+            {t('dashboard.moistureChartTitle')}
+          </h3>
           <div className="chart-container">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={history}>
@@ -83,15 +186,17 @@ const Dashboard = () => {
                 <YAxis yAxisId="right" orientation="right" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-glass)', borderRadius: '8px' }} />
                 <Legend />
-                <Area yAxisId="left" type="monotone" dataKey="soil_moisture" name="Moisture %" stroke="var(--accent-blue)" fillOpacity={1} fill="url(#colorMoisture)" />
-                <Area yAxisId="right" type="monotone" dataKey="soil_temperature" name="Temp °C" stroke="var(--accent-amber)" fillOpacity={1} fill="url(#colorTemp)" />
+                <Area yAxisId="left" type="monotone" dataKey="soil_moisture" name={t('dashboard.soilMoisture') + ' (%)'} stroke="var(--accent-blue)" fillOpacity={1} fill="url(#colorMoisture)" />
+                <Area yAxisId="right" type="monotone" dataKey="soil_temperature" name={t('dashboard.soilTemp') + ' (°C)'} stroke="var(--accent-amber)" fillOpacity={1} fill="url(#colorTemp)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="glass-card">
-          <h3 style={{ fontSize: '1rem', marginBottom: '1rem' }}>NPK Trends (Last 7 Days)</h3>
+        <div data-tour="fertilizer" className="glass-card">
+          <h3 style={{ fontSize: '1rem', marginBottom: '1rem' }}>
+            {t('dashboard.npkChartTitle')}
+          </h3>
           <div className="chart-container">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={history.filter((_,i) => i%4 === 0).slice(-7)}>
@@ -100,77 +205,53 @@ const Dashboard = () => {
                 <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-glass)', borderRadius: '8px' }} />
                 <Legend />
-                <Bar dataKey="nitrogen" name="Nitrogen (N)" fill="var(--accent-primary)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="phosphorus" name="Phosphorus (P)" fill="var(--accent-amber)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="potassium" name="Potassium (K)" fill="var(--accent-blue)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="nitrogen" name={t('dashboard.nitrogen')} fill="var(--accent-primary)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="phosphorus" name={t('dashboard.phosphorus')} fill="var(--accent-amber)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="potassium" name={t('dashboard.potassium')} fill="var(--accent-blue)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Row 4: Weather, Alerts, AI */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
-        
-        {/* Weather Mini */}
-        <div className="glass-card">
-          <h3 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <CloudSun size={18} color="var(--accent-amber)" /> Local Weather
+      {/* Row 4: Local Weather Forecast */}
+      <div data-tour="weather" className="glass-card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <h3 style={{ fontSize: '1rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <CloudSun size={18} color="var(--accent-amber)" /> {t('dashboard.weatherTitle')}
           </h3>
-          {weather && (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <div>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 700 }}>{weather.temperature}°C</div>
-                  <div style={{ color: 'var(--text-secondary)' }}>{weather.description}</div>
-                </div>
-                <div style={{ textAlign: 'right', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                  <p style={{ margin: '0 0 0.25rem 0' }}>Humidity: {weather.humidity}%</p>
-                  <p style={{ margin: '0 0 0.25rem 0' }}>Wind: {weather.wind_speed} km/h</p>
-                  <p style={{ margin: 0 }}>Rain Prob: {weather.rain_probability}%</p>
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+            {t('dashboard.weatherSubtitle')}
+          </span>
+        </div>
+        {weather && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.75rem', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem', flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ fontSize: '2.75rem', fontWeight: 800, lineHeight: 1.1 }}>{weather.temperature}°C</div>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', marginTop: '0.25rem', fontWeight: 500 }}>
+                  {isHi ? (DESC_MAP_HI[weather.description] || weather.description) : weather.description}
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-glass)' }}>
-                {weather.forecast.slice(0, 3).map((day, i) => (
-                  <div key={i} style={{ flex: 1, textAlign: 'center', padding: '0.5rem', background: 'var(--bg-glass)', borderRadius: '8px' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>{day.day}</div>
-                    <div style={{ fontWeight: 600 }}>{day.high}°</div>
-                  </div>
-                ))}
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <div>{t('dashboard.humidity')}: <strong style={{ color: 'var(--text-primary)' }}>{weather.humidity}%</strong></div>
+                <div>{t('dashboard.windSpeed')}: <strong style={{ color: 'var(--text-primary)' }}>{weather.wind_speed} {isHi ? 'किमी/घंटा' : 'km/h'}</strong></div>
+                <div>{t('dashboard.rainProb')}: <strong style={{ color: 'var(--text-primary)' }}>{weather.rain_probability}%</strong></div>
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Active Alerts */}
-        <div className="glass-card">
-          <h3 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'space-between' }}>
-            Active Alerts
-            <span style={{ fontSize: '0.75rem', background: 'var(--accent-red)', padding: '2px 8px', borderRadius: '10px', color: '#fff' }}>{alerts.filter(a => !a.is_resolved).length}</span>
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {alerts.slice(0, 3).map(alert => (
-              <AlertItem key={alert.id} alert={alert} />
-            ))}
+            <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
+              {weather.forecast.slice(0, 6).map((day, i) => (
+                <div key={i} style={{ flex: 1, minWidth: '65px', textAlign: 'center', padding: '0.65rem 0.5rem', background: 'var(--bg-glass)', borderRadius: '8px', border: '1px solid var(--border-glass)' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
+                    {isHi ? (DAY_MAP_HI[day.day] || day.day) : day.day}
+                  </div>
+                  <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{day.high}°</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>{day.rain_probability}% 🌧</div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-
-        {/* AI Recommendations */}
-        <div className="glass-card" style={{ background: 'linear-gradient(145deg, rgba(15,30,20,0.9), rgba(22,163,74,0.1))' }}>
-          <h3 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-primary)' }}>
-            <Leaf size={18} /> DHARA AI Insights
-          </h3>
-          <ul style={{ margin: 0, paddingLeft: '1.2rem', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.9rem' }}>
-            <li>Soil moisture is optimal. Skip irrigation today as there is a 20% chance of rain.</li>
-            <li>Phosphorus levels are slightly below the ideal 40 mg/kg for Wheat at this growth stage.</li>
-            <li>Consider applying DAP fertilizer within the next 4 days.</li>
-            <li>No pest activity detected based on current thermal and moisture signatures.</li>
-          </ul>
-          <button className="btn-secondary" style={{ width: '100%', marginTop: '1.5rem', fontSize: '0.85rem' }}>
-            Ask DHARA AI for more details
-          </button>
-        </div>
-
+        )}
       </div>
     </div>
   );

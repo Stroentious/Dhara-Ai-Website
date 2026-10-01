@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Leaf, Menu, X, Sun, Moon, Sparkles, LayoutDashboard, LogIn, ArrowRight } from 'lucide-react';
+import { Leaf, Menu, X, Sun, Moon, Sparkles, LayoutDashboard, LogIn, ArrowRight, Globe } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import LanguageSelector from '../LanguageSelector';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme, toggleTheme, actualTheme } = useTheme();
   const { currentUser } = useAuth();
+  const { language, toggleLanguage, t } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,14 +23,14 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { label: 'Solutions', href: '#story' },
-    { label: 'Ecosystem', href: '#ecosystem' },
-    { label: 'Soil Intelligence', href: '#soil-intelligence' },
-    { label: 'Live Preview', href: '#dashboard-preview' },
-    { label: 'Dhara AI', href: '#ai-assistant' },
-    { label: 'Hardware', href: '#hardware' },
-    { label: 'Technology', href: '#technology' },
-    { label: 'Sustainability', href: '#sustainability' },
+    { label: t('nav.solutions'), href: '#story' },
+    { label: t('nav.ecosystem'), href: '#ecosystem' },
+    { label: t('nav.soilIntelligence'), href: '#soil-intelligence' },
+    { label: t('nav.livePreview'), href: '#dashboard-preview' },
+    { label: t('nav.dharaAi'), href: '#ai-assistant' },
+    { label: t('nav.hardware'), href: '#hardware' },
+    { label: t('nav.technology'), href: '#technology' },
+    { label: t('nav.sustainability'), href: '#sustainability' },
   ];
 
   const handleNavClick = (e, href) => {
@@ -50,7 +53,7 @@ const Navbar = () => {
           zIndex: 100,
           transition: 'all 0.3s ease',
           backgroundColor: isScrolled
-            ? (actualTheme === 'dark' ? 'rgba(10, 15, 13, 0.88)' : 'rgba(248, 250, 247, 0.88)')
+            ? (actualTheme === 'dark' ? 'rgba(0, 0, 0, 0.88)' : 'rgba(248, 250, 247, 0.88)')
             : 'transparent',
           backdropFilter: isScrolled ? 'blur(16px)' : 'none',
           WebkitBackdropFilter: isScrolled ? 'blur(16px)' : 'none',
@@ -79,7 +82,7 @@ const Navbar = () => {
                 DHARA AI
               </span>
               <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--accent-primary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                Agri-Intelligence
+                {t('nav.agriIntelligence')}
               </span>
             </div>
           </Link>
@@ -134,6 +137,9 @@ const Navbar = () => {
               {actualTheme === 'dark' ? <Sun size={18} color="var(--accent-amber)" /> : <Moon size={18} color="var(--accent-primary)" />}
             </button>
 
+            {/* Complete Indian Language Selector (22 Languages + English) */}
+            <LanguageSelector />
+
             {/* Dashboard / Demo CTA Button */}
             <Link
               to="/dashboard"
@@ -148,7 +154,7 @@ const Navbar = () => {
               }}
             >
               <LayoutDashboard size={16} />
-              <span>{currentUser ? 'Go to Dashboard' : 'View Demo'}</span>
+              <span>{currentUser ? t('nav.dashboard') : t('nav.viewDemo')}</span>
             </Link>
 
             {/* Login Link if not logged in */}
@@ -166,7 +172,7 @@ const Navbar = () => {
                 }}
               >
                 <LogIn size={15} />
-                <span>Login</span>
+                <span>{t('nav.login')}</span>
               </Link>
             )}
 
@@ -202,7 +208,7 @@ const Navbar = () => {
             position: 'fixed',
             inset: 0,
             zIndex: 99,
-            backgroundColor: 'rgba(10, 15, 13, 0.6)',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
             backdropFilter: 'blur(8px)',
             display: 'flex',
             justifyContent: 'flex-end',
@@ -227,7 +233,7 @@ const Navbar = () => {
           >
             <div style={{ marginBottom: '0.5rem' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                Navigation
+                {t('nav.navigation')}
               </span>
             </div>
 
@@ -249,6 +255,9 @@ const Navbar = () => {
             ))}
 
             <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '1.5rem' }}>
+              <div style={{ width: '100%' }}>
+                <LanguageSelector style={{ width: '100%', justifyContent: 'center' }} />
+              </div>
               <Link
                 to="/dashboard"
                 className="btn-primary"
@@ -256,7 +265,7 @@ const Navbar = () => {
                 style={{ width: '100%' }}
               >
                 <LayoutDashboard size={18} />
-                <span>{currentUser ? 'Go to Dashboard' : 'Launch Demo'}</span>
+                <span>{currentUser ? t('nav.dashboard') : t('nav.viewDemo')}</span>
               </Link>
 
               <Link
@@ -266,7 +275,7 @@ const Navbar = () => {
                 style={{ width: '100%' }}
               >
                 <LogIn size={16} />
-                <span>Farmer Login</span>
+                <span>{t('nav.login')}</span>
               </Link>
             </div>
           </div>

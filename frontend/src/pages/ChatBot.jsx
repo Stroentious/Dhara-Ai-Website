@@ -1,9 +1,29 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useField } from '../context/FieldContext';
-import { chatAPI } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
+import { getAIResponse } from '../services/agriAssistant';
 import { Send, Bot, User, Leaf, Zap, Droplets, Trash2, TrendingUp, ShoppingBag, Layers, HelpCircle } from 'lucide-react';
 
+const CROP_MAP_HI = {
+  Wheat: 'गेहूं',
+  Rice: 'धान',
+  Sugarcane: 'गन्ना',
+  Cotton: 'कपास',
+  Maize: 'मक्का',
+  Corn: 'मक्का',
+  Potato: 'आलू',
+  Tomato: 'टमाटर',
+  Mustard: 'सरसों',
+  Soybean: 'सोयाबीन'
+};
+
+const getLocalizedCrop = (crop, lang) => {
+  if (lang !== 'hi' || !crop) return crop || 'Wheat';
+  return CROP_MAP_HI[crop] || crop;
+};
+
 const renderFormattedText = (text) => {
+
   if (!text) return null;
 
   const lines = text.split('\n');
@@ -21,7 +41,7 @@ const renderFormattedText = (text) => {
       <div key={`table-${keyIdx++}`} style={{ overflowX: 'auto', margin: '0.75rem 0' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-glass)' }}>
           <thead>
-            <tr style={{ background: 'rgba(34, 197, 94, 0.2)', borderBottom: '1px solid var(--border-glass)' }}>
+            <tr style={{ background: 'var(--accent-light)', borderBottom: '1px solid var(--border-glass)' }}>
               {headerRow.split('|').filter(c => c.trim()).map((cell, idx) => (
                 <th key={idx} style={{ padding: '0.6rem 0.75rem', textAlign: 'left', fontWeight: 600, color: 'var(--text-secondary)' }}>
                   {cell.trim()}
@@ -81,17 +101,26 @@ const renderFormattedText = (text) => {
 
 const ChatBot = () => {
   const { selectedField } = useField();
-  const [messages, setMessages] = useState([
-    { id: 1, role: 'ai', text: "Hello! I am DHARA AI. I have real-time access to your field's live sensor data, soil NPK levels, weather forecasts, and live mandi market prices. How can I assist you today?" }
-  ]);
+  const { language, t, tCrop } = useLanguage();
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Initialize and update greeting message when language changes
+  useEffect(() => {
+    setMessages(prev => {
+      if (prev.length <= 1) {
+        return [{ id: 1, role: 'ai', text: t('chatbot.initialGreeting') }];
+      }
+      return prev;
+    });
+  }, [language, t]);
+
   useEffect(() => {
     const headerTitle = document.querySelector('.page-title');
-    if (headerTitle) headerTitle.textContent = 'DHARA AI Assistant';
-  }, []);
+    if (headerTitle) headerTitle.textContent = t('nav.chat');
+  }, [t]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -111,15 +140,16 @@ const ChatBot = () => {
     setIsTyping(true);
 
     try {
-      const res = await chatAPI.send(queryText, selectedField?.id);
-      if (res && res.data && res.data.reply) {
-        setMessages(prev => [...prev, { id: Date.now() + 1, role: 'ai', text: res.data.reply }]);
+      const aiReply = await getAIResponse(queryText, selectedField, language);
+      if (aiReply) {
+        setMessages(prev => [...prev, { id: Date.now() + 1, role: 'ai', text: aiReply }]);
       } else {
-        throw new Error("No response reply");
+        throw new Error("Empty response received");
       }
     } catch (err) {
       console.error("Chat API call failed:", err);
-      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'ai', text: "I am having trouble connecting to the backend. Please check that the server is running." }]);
+      const fallbackReply = t('chatbot.fallbackReply', { field: selectedField?.name || 'your field' });
+      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'ai', text: fallbackReply }]);
     } finally {
       setIsTyping(false);
     }
@@ -127,18 +157,17 @@ const ChatBot = () => {
 
   const clearChat = () => {
     setMessages([
-      { id: Date.now(), role: 'ai', text: "Conversation cleared. How can I help you optimize your farm today?" }
+      { id: Date.now(), role: 'ai', text: t('chatbot.clearedMsg') }
     ]);
   };
 
   const suggestions = [
-    { label: "How is my field right now?", icon: HelpCircle },
-    { label: "Should I irrigate today?", icon: Droplets },
-    { label: "My phosphorus is low. What should I do?", icon: Zap },
-    { label: "Compare DAP and NPK 12-32-16 fertilizers.", icon: Layers },
-    { label: "What is today's wheat price near me?", icon: TrendingUp },
-    { label: "Which nearby market is better?", icon: ShoppingBag },
-    { label: "Considering my field data and weather, what should I do today?", icon: Leaf }
+    { label: t('chatbot.sq1'), icon: HelpCircle },
+    { label: t('chatbot.sq2'), icon: Droplets },
+    { label: t('chatbot.sq3'), icon: Zap },
+    { label: t('chatbot.sq4'), icon: Layers },
+    { label: t('chatbot.sq5'), icon: TrendingUp },
+    { label: t('chatbot.sq6'), icon: Leaf }
   ];
 
   return (
@@ -154,18 +183,18 @@ const ChatBot = () => {
               <Leaf size={18} color="#fff" />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600 }}>DHARA AI Agricultural & Mandi Advisor</h3>
+              <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600 }}>{t('chatbot.headerTitle')}</h3>
               <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                {selectedField ? `Active Field: ${selectedField.name} (${selectedField.crop_type || 'Wheat'})` : 'Global Agronomic Assistant'}
+                {selectedField ? `${t('chatbot.activeField')}: ${selectedField.name} (${tCrop(selectedField.crop_type)})` : t('chatbot.globalAssistant')}
               </p>
             </div>
           </div>
           <button 
             onClick={clearChat}
             style={{ background: 'none', border: '1px solid var(--border-glass)', color: 'var(--text-muted)', borderRadius: '6px', padding: '0.35rem 0.6rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem' }}
-            title="Clear Chat History"
+            title={t('chatbot.clearHistory')}
           >
-            <Trash2 size={14} /> Clear
+            <Trash2 size={14} /> {t('assistant.clear')}
           </button>
         </div>
 
@@ -180,8 +209,8 @@ const ChatBot = () => {
               )}
               
               <div style={{ 
-                background: msg.role === 'user' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                border: `1px solid ${msg.role === 'user' ? 'rgba(34, 197, 94, 0.4)' : 'var(--border-glass)'}`,
+                background: msg.role === 'user' ? 'var(--accent-light)' : 'rgba(255, 255, 255, 0.05)',
+                border: `1px solid ${msg.role === 'user' ? 'var(--border-strong)' : 'var(--border-glass)'}`,
                 padding: '1rem 1.25rem', borderRadius: '12px',
                 borderTopRightRadius: msg.role === 'user' ? 0 : '12px',
                 borderTopLeftRadius: msg.role === 'ai' ? 0 : '12px',
@@ -205,7 +234,7 @@ const ChatBot = () => {
                 <Leaf size={20} color="#fff" />
               </div>
               <div style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid var(--border-glass)', padding: '1rem 1.25rem', borderRadius: '12px', borderTopLeftRadius: 0, display: 'flex', gap: '6px', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginRight: '4px' }}>Analyzing field sensors & data...</span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginRight: '4px' }}>{t('chatbot.analyzing')}</span>
                 <span className="dot" style={{ width: 6, height: 6, background: 'var(--accent-primary)', borderRadius: '50%', animation: 'bounce 1.4s infinite ease-in-out both' }}></span>
                 <span className="dot" style={{ width: 6, height: 6, background: 'var(--accent-primary)', borderRadius: '50%', animation: 'bounce 1.4s infinite ease-in-out both', animationDelay: '0.2s' }}></span>
                 <span className="dot" style={{ width: 6, height: 6, background: 'var(--accent-primary)', borderRadius: '50%', animation: 'bounce 1.4s infinite ease-in-out both', animationDelay: '0.4s' }}></span>
@@ -222,7 +251,7 @@ const ChatBot = () => {
               type="text"
               value={input}
               onChange={e => setInput(e.target.value)}
-              placeholder="Ask about your field, NPK, irrigation, fertilizer comparison, or mandi prices..."
+              placeholder={t('chatbot.placeholder')}
               style={{ flex: 1, paddingRight: '3rem', fontSize: '0.95rem' }}
               maxLength={2000}
               disabled={isTyping}
@@ -253,18 +282,18 @@ const ChatBot = () => {
       <div className="glass-card" style={{ width: '320px', display: 'flex', flexDirection: 'column', gap: '1.25rem', overflowY: 'auto' }}>
         <div>
           <h3 style={{ fontSize: '0.95rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Bot size={18} color="var(--accent-primary)" /> AI Capabilities
+            <Bot size={18} color="var(--accent-primary)" /> {t('chatbot.capabilitiesTitle')}
           </h3>
           <ul style={{ paddingLeft: '1.2rem', margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            <li>Queries real-time 7-in-1 NPK & moisture sensors</li>
-            <li>Evaluates weather & irrigation timing</li>
-            <li>Compares fertilizer NPK ratios & costs</li>
-            <li>Fetches live mandi market prices & nearby shops</li>
+            <li>{t('chatbot.cap1')}</li>
+            <li>{t('chatbot.cap2')}</li>
+            <li>{t('chatbot.cap3')}</li>
+            <li>{t('chatbot.cap4')}</li>
           </ul>
         </div>
 
         <div style={{ borderTop: '1px solid var(--border-glass)', paddingTop: '1rem' }}>
-          <h3 style={{ fontSize: '0.95rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>Suggested Questions</h3>
+          <h3 style={{ fontSize: '0.95rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>{t('chatbot.suggestedQuestionsTitle')}</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {suggestions.map((s, idx) => {
               const IconComp = s.icon;

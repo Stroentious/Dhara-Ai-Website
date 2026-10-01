@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import AlertItem from '../components/AlertItem';
 import { mockAlerts } from '../data/mockData';
 import { Filter, CheckCircle } from 'lucide-react';
 
 const Alerts = () => {
+  const { t } = useLanguage();
   const [alerts, setAlerts] = useState(mockAlerts);
   const [filter, setFilter] = useState('ALL');
 
   useEffect(() => {
     const headerTitle = document.querySelector('.page-title');
-    if (headerTitle) headerTitle.textContent = 'System Alerts';
-  }, []);
+    if (headerTitle) headerTitle.textContent = t('nav.alerts');
+  }, [t]);
 
   const handleResolve = (id) => {
     setAlerts(alerts.map(a => a.id === id ? { ...a, is_resolved: true } : a));
@@ -29,26 +31,32 @@ const Alerts = () => {
       <div className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', gap: '2rem' }}>
           <div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Total Active</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--accent-red)' }}>{alerts.filter(a => !a.is_resolved).length}</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('alerts.totalActive')}</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--accent-red)' }}>
+              {alerts.filter(a => !a.is_resolved).length}
+            </div>
           </div>
           <div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Critical</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--accent-amber)' }}>{alerts.filter(a => (a.severity === 'HIGH' || a.severity === 'CRITICAL') && !a.is_resolved).length}</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('alerts.critical')}</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--accent-amber)' }}>
+              {alerts.filter(a => (a.severity === 'HIGH' || a.severity === 'CRITICAL') && !a.is_resolved).length}
+            </div>
           </div>
           <div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Resolved (7d)</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--accent-primary)' }}>{alerts.filter(a => a.is_resolved).length}</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('alerts.resolved')}</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
+              {alerts.filter(a => a.is_resolved).length}
+            </div>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Filter size={18} color="var(--text-secondary)" />
           <select value={filter} onChange={e => setFilter(e.target.value)} style={{ width: 'auto' }}>
-            <option value="ALL">All Alerts</option>
-            <option value="ACTIVE">Active Only</option>
-            <option value="CRITICAL">Critical & High</option>
-            <option value="RESOLVED">Resolved</option>
+            <option value="ALL">{t('alerts.filterAll')}</option>
+            <option value="ACTIVE">{t('alerts.filterActive')}</option>
+            <option value="CRITICAL">{t('alerts.filterCritical')}</option>
+            <option value="RESOLVED">{t('alerts.filterResolved')}</option>
           </select>
         </div>
       </div>
@@ -57,7 +65,7 @@ const Alerts = () => {
         {filteredAlerts.length === 0 ? (
           <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
             <CheckCircle size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
-            <p>No alerts matching the selected filter.</p>
+            <p>{t('alerts.noAlerts')}</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>

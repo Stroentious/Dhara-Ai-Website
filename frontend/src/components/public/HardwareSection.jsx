@@ -11,9 +11,13 @@ import {
   CheckCircle2,
   HardDrive
 } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const HardwareSection = () => {
-  const hardwareItems = [
+  const { language } = useLanguage();
+  const isHi = language !== 'en';
+
+  const hardwareItemsEn = [
     {
       title: '7-in-1 NPK Soil Sensor',
       category: 'Root-Zone Probe',
@@ -70,6 +74,65 @@ const HardwareSection = () => {
     }
   ];
 
+  const hardwareItemsHi = [
+    {
+      title: '7-इन-1 NPK मृदा सेंसर',
+      category: 'जड़-क्षेत्र प्रोब',
+      icon: Layers,
+      color: 'var(--accent-primary)',
+      description: 'कई वर्षों के भूमिगत टिकाऊपन के लिए वैक्यूम-पॉटेड एपॉक्सी सीलिंग के साथ औद्योगिक-ग्रेड स्टेनलेस स्टील SS316 प्रोब।',
+      specs: ['RS485 मॉडबस RTU प्रोटोकॉल', 'IP68 जलरोधी सबमर्सिबल सीलिंग', 'मापता है: N, P, K, pH, EC, VWC% नमी, तापमान'],
+      integrationBadge: 'मॉडबस मानक'
+    },
+    {
+      title: 'सोलर टेलीमेट्री पोल',
+      category: 'फील्ड ट्रांसीवर नोड',
+      icon: Sun,
+      color: 'var(--accent-amber)',
+      description: 'इनबिल्ट सोलर पैनल, लिथियम आयरन फॉस्फेट (LiFePO4) बैटरी और LoRa मेश नोड के साथ मजबूत आउटडोर फील्ड स्टेशन।',
+      specs: ['5W उच्च-दक्षता मोनोक्रिस्टलाइन पैनल', 'LoRaWAN 868 / 915 MHz लंबी दूरी', 'मानसून के दौरान 5+ दिनों की ऊर्जा स्वायत्तता'],
+      integrationBadge: 'सौर स्वायत्त'
+    },
+    {
+      title: 'औद्योगिक LoRa गेटवे',
+      category: 'फार्म एज स्टेशन',
+      icon: Radio,
+      color: 'var(--accent-blue)',
+      description: 'खुले कृषि क्षेत्र में 5-10 किमी दूर तक दर्जनों फील्ड नोड्स से पैकेट अपलिंक प्राप्त करने वाला केंद्रीय फार्म गेटवे।',
+      specs: ['8-चैनल SX1302 कंसंट्रेटर', 'ईथरनेट / 4G LTE बैकहॉल', 'शून्य डेटा हानि के लिए स्थानीय एज बफरिंग'],
+      integrationBadge: 'लंबी दूरी मेश'
+    },
+    {
+      title: 'सबस्टेशन एवं पंप रिले',
+      category: 'एक्चुएशन नियंत्रक',
+      icon: Zap,
+      color: 'var(--accent-secondary)',
+      description: 'सबमर्सिबल पंप स्टार्टर्स, प्रेशर गेज और बिजली फेज मॉनिटर के साथ इंटरफेस करने वाला माइक्रोकंट्रोलर रिले मॉड्यूल।',
+      specs: ['ड्राई कॉन्टैक्ट 3-फेज रिले इंटरफेस', 'ओवरलोड और फेज लॉस सुरक्षा', 'पैनल पर मैनुअल ओवरराइड स्विच'],
+      integrationBadge: 'पंप इंटरलॉक'
+    },
+    {
+      title: 'स्वचालित सोलेनोइड वाल्व',
+      category: 'जोन एक्चुएटर्स',
+      icon: Droplets,
+      color: 'var(--accent-blue)',
+      description: 'व्यक्तिगत खेत ड्रिप मैनिफोल्ड्स और माइक्रो-स्प्रिंकलर्स में दबावयुक्त पानी के प्रवाह को नियंत्रित करने वाले लैचिंग सोलेनोइड वाल्व।',
+      specs: ['12V DC पल्स संचालित (अल्ट्रा-लो पावर)', 'संक्षारण प्रतिरोधी प्रबलित नायलॉन बॉडी', '10 बार तक दबाव रेटिंग'],
+      integrationBadge: 'ड्रिप एकीकरण'
+    },
+    {
+      title: 'वेंचुरी फर्टिगेशन यूनिट',
+      category: 'पोषक खुराक',
+      icon: Sliders,
+      color: 'var(--accent-primary)',
+      description: 'सिंचाई धारा में आनुपातिक तरल उर्वरक और सूक्ष्म पोषक तत्वों के सम्मिश्रण के लिए विभेदक दबाव इंजेक्शन इकाई।',
+      specs: ['समायोज्य प्रवाह सक्शन 10-250 L/घंटा', 'अम्ल एवं रसायन प्रतिरोधी सील', 'फ्लो मीटर फीडबैक लूप'],
+      integrationBadge: 'सटीक खुराक'
+    }
+  ];
+
+  const hardwareItems = isHi ? hardwareItemsHi : hardwareItemsEn;
+
   return (
     <section id="hardware" className="site-section" style={{ backgroundColor: 'var(--bg-secondary)' }}>
       <div className="site-container">
@@ -78,17 +141,19 @@ const HardwareSection = () => {
         <div className="section-header">
           <div className="section-eyebrow">
             <HardDrive size={14} />
-            <span>Hardware Ecosystem</span>
+            <span>{isHi ? 'हार्डवेयर पारिस्थितिकी तंत्र' : 'Hardware Ecosystem'}</span>
           </div>
           <h2 className="section-title">
-            Engineered for Harsh Agricultural Realities.
+            {isHi ? 'कठिन कृषि परिस्थितियों के लिए विशेष रूप से निर्मित।' : 'Engineered for Harsh Agricultural Realities.'}
           </h2>
           <p className="section-subtitle">
-            Dhara AI is architected to interface seamlessly with ruggedized, off-the-shelf field hardware—combining low-power wireless mesh with industrial sensing.
+            {isHi 
+              ? 'धारा एआई को मजबूत व टिकाऊ ऑन-फील्ड हार्डवेयर के साथ निर्बाध रूप से जोड़ने के लिए डिज़ाइन किया गया है—जो कम बिजली वाले वायरलेस मेश को औद्योगिक सेंसिंग के साथ जोड़ता है।'
+              : 'Dhara AI is architected to interface seamlessly with ruggedized, off-the-shelf field hardware—combining low-power wireless mesh with industrial sensing.'}
           </p>
           <div style={{ marginTop: '0.75rem' }}>
             <span className="badge badge-demo">
-              ⚡ Designed for Modbus RS485 & LoRaWAN Open Industrial Standards
+              {isHi ? '⚡ मॉडबस RS485 एवं LoRaWAN खुले औद्योगिक मानकों के अनुरूप' : '⚡ Designed for Modbus RS485 & LoRaWAN Open Industrial Standards'}
             </span>
           </div>
         </div>
@@ -122,8 +187,12 @@ const HardwareSection = () => {
               background: 'linear-gradient(to top, rgba(10, 15, 13, 0.85), transparent)',
               color: '#ffffff'
             }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#86efac', textTransform: 'uppercase' }}>Field Station</div>
-              <div style={{ fontSize: '1rem', fontWeight: 700 }}>Solar-Powered LoRa Mesh Node</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#86efac', textTransform: 'uppercase' }}>
+                {isHi ? 'फील्ड स्टेशन' : 'Field Station'}
+              </div>
+              <div style={{ fontSize: '1rem', fontWeight: 700 }}>
+                {isHi ? 'सौर-ऊर्जा संचालित LoRa मेश नोड' : 'Solar-Powered LoRa Mesh Node'}
+              </div>
             </div>
           </div>
 
@@ -149,8 +218,12 @@ const HardwareSection = () => {
               background: 'linear-gradient(to top, rgba(10, 15, 13, 0.85), transparent)',
               color: '#ffffff'
             }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#86efac', textTransform: 'uppercase' }}>Actuation</div>
-              <div style={{ fontSize: '1rem', fontWeight: 700 }}>Automated Precision Drip Control</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#86efac', textTransform: 'uppercase' }}>
+                {isHi ? 'स्वचालन' : 'Actuation'}
+              </div>
+              <div style={{ fontSize: '1rem', fontWeight: 700 }}>
+                {isHi ? 'स्वचालित सटीक ड्रिप नियंत्रण' : 'Automated Precision Drip Control'}
+              </div>
             </div>
           </div>
         </div>

@@ -10,15 +10,19 @@ import {
   ListOrdered
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 
 const HowItWorksSection = () => {
-  const steps = [
+  const { language } = useLanguage();
+  const isHi = language !== 'en';
+
+  const stepsEn = [
     {
       step: '01',
       title: 'Connect the Field',
       icon: Radio,
       color: 'var(--accent-primary)',
-      desc: 'Embed the 7-in-1 stainless probe into your crop\'s active root zone and mount the compact solar node on the field perimeter.'
+      desc: "Embed the 7-in-1 stainless probe into your crop's active root zone and mount the compact solar node on the field perimeter."
     },
     {
       step: '02',
@@ -46,9 +50,49 @@ const HowItWorksSection = () => {
       title: 'Ask Dhara AI',
       icon: MessageSquareText,
       color: 'var(--accent-primary)',
-      desc: 'Ask questions about fertilizer dosage, irrigation timing, and crop health grounded in your field\'s live telemetry.'
+      desc: "Ask questions about fertilizer dosage, irrigation timing, and crop health grounded in your field's live telemetry."
     }
   ];
+
+  const stepsHi = [
+    {
+      step: '01',
+      title: 'खेत से जुड़ें',
+      icon: Radio,
+      color: 'var(--accent-primary)',
+      desc: '7-इन-1 स्टेनलेस स्टील प्रोब को अपनी फसल के सक्रिय जड़ क्षेत्र में लगाएं और कॉम्पैक्ट सोलर नोड को खेत की परिधि पर स्थापित करें।'
+    },
+    {
+      step: '02',
+      title: 'खेत का डेटा एकत्र करें',
+      icon: SignalHigh,
+      color: 'var(--accent-secondary)',
+      desc: 'सोलर टेलीमेट्री नोड लंबी दूरी की LoRaWAN आवृत्तियों पर मिट्टी की नमी, NPK, pH और तापमान का डेटा प्रसारित करता है।'
+    },
+    {
+      step: '03',
+      title: 'मिट्टी और पर्यावरण को समझें',
+      icon: LineChart,
+      color: 'var(--accent-blue)',
+      desc: 'वेब डैशबोर्ड में रीयल-टाइम नमी में कमी के कर्व, पोषक तत्वों के संतुलन और 7-दिवसीय सूक्ष्म मौसम पूर्वानुमान देखें।'
+    },
+    {
+      step: '04',
+      title: 'अलर्ट और सुझाव प्राप्त करें',
+      icon: BellRing,
+      color: 'var(--accent-amber)',
+      desc: 'जब जड़ की नमी सीमा से नीचे गिरती है या पोषक तत्वों की कमी का पता चलता है, तो तुरंत पुश सूचनाएं प्राप्त करें।'
+    },
+    {
+      step: '05',
+      title: 'धारा एआई से पूछें',
+      icon: MessageSquareText,
+      color: 'var(--accent-primary)',
+      desc: 'अपने खेत की लाइव टेलीमेट्री पर आधारित उर्वरक खुराक, सिंचाई के समय और फसल स्वास्थ्य के बारे में प्रश्न पूछें।'
+    }
+  ];
+
+  const steps = isHi ? stepsHi : stepsEn;
 
   return (
     <section id="how-it-works" className="site-section" style={{ backgroundColor: 'var(--bg-primary)' }}>
@@ -58,13 +102,15 @@ const HowItWorksSection = () => {
         <div className="section-header">
           <div className="section-eyebrow">
             <ListOrdered size={14} />
-            <span>Implementation Journey</span>
+            <span>{isHi ? 'कार्यान्वयन प्रक्रिया' : 'Implementation Journey'}</span>
           </div>
           <h2 className="section-title">
-            How Dhara AI Works in 5 Simple Steps
+            {isHi ? 'धारा एआई 5 आसान चरणों में कैसे काम करता है' : 'How Dhara AI Works in 5 Simple Steps'}
           </h2>
           <p className="section-subtitle">
-            From physical deployment in the soil to automated alerts on your mobile phone, getting started requires no complex IT infrastructure.
+            {isHi 
+              ? 'मिट्टी में भौतिक स्थापना से लेकर आपके मोबाइल फोन पर स्वचालित अलर्ट तक, शुरुआत करने के लिए किसी जटिल आईटी बुनियादी ढांचे की आवश्यकता नहीं है।'
+              : 'From physical deployment in the soil to automated alerts on your mobile phone, getting started requires no complex IT infrastructure.'}
           </p>
         </div>
 
@@ -133,7 +179,7 @@ const HowItWorksSection = () => {
           textAlign: 'center'
         }}>
           <Link to="/dashboard" className="btn-primary" style={{ padding: '0.85rem 2rem' }}>
-            <span>Explore the Live Demo Platform</span>
+            <span>{isHi ? 'लाइव डेमो प्लेटफॉर्म देखें' : 'Explore the Live Demo Platform'}</span>
             <ArrowRight size={16} />
           </Link>
         </div>

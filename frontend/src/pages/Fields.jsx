@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useField } from '../context/FieldContext';
+import { useLanguage } from '../context/LanguageContext';
 import { fieldsAPI } from '../services/api';
 import { MapPin, Crop, Maximize, Plus, Edit3, Trash2, X, Save, Check } from 'lucide-react';
 import StatusBadge from '../components/StatusBadge';
@@ -7,6 +8,38 @@ import StatusBadge from '../components/StatusBadge';
 const EMPTY_FORM = { name: '', location: '', crop_type: '', area_hectares: '', soil_type: '' };
 const SOIL_TYPES = ['Loamy', 'Clay', 'Sandy', 'Silt', 'Red', 'Black', 'Laterite', 'Alluvial', 'Peaty', 'Saline'];
 const CROP_SUGGESTIONS = ['Wheat', 'Rice', 'Sugarcane', 'Cotton', 'Maize', 'Soybean', 'Tomato', 'Potato', 'Onion', 'Groundnut', 'Mustard', 'Chickpea', 'Millet', 'Jowar', 'Bajra'];
+
+const CROP_MAP_HI = {
+  'Wheat': 'गेहूं',
+  'Rice': 'धान',
+  'Sugarcane': 'गन्ना',
+  'Cotton': 'कपास',
+  'Maize': 'मक्का',
+  'Corn': 'मक्का',
+  'Soybean': 'सोयाबीन',
+  'Tomato': 'टमाटर',
+  'Potato': 'आलू',
+  'Onion': 'प्याज',
+  'Groundnut': 'मूंगफली',
+  'Mustard': 'सरसों',
+  'Chickpea': 'चना',
+  'Millet': 'बाजरा',
+  'Jowar': 'ज्वार',
+  'Bajra': 'बाजरा',
+};
+
+const SOIL_MAP_HI = {
+  'Loamy': 'दोमट मिट्टी',
+  'Clay': 'चिकनी मिट्टी',
+  'Sandy': 'बलुई मिट्टी',
+  'Silt': 'गाद मिट्टी',
+  'Red': 'लाल मिट्टी',
+  'Black': 'काली मिट्टी',
+  'Laterite': 'लैटेराइट मिट्टी',
+  'Alluvial': 'जलोढ़ मिट्टी',
+  'Peaty': 'पीट मिट्टी',
+  'Saline': 'लवणीय मिट्टी',
+};
 
 const LOCATION_SUGGESTIONS = [
   'Punjab, India',
@@ -65,6 +98,7 @@ const LOCATION_SUGGESTIONS = [
 
 const Fields = () => {
   const { fields, selectedField, setSelectedField, fetchFields } = useField();
+  const { t, language, tCrop, tSoil } = useLanguage();
   const [showModal, setShowModal] = useState(false);
   const [editingField, setEditingField] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -75,6 +109,11 @@ const Fields = () => {
   // Location Autocomplete states
   const [showLocDropdown, setShowLocDropdown] = useState(false);
   const locationContainerRef = useRef(null);
+
+  useEffect(() => {
+    const headerTitle = document.querySelector('.page-title');
+    if (headerTitle) headerTitle.textContent = t('nav.fields');
+  }, [t]);
 
   const openAdd = () => {
     setEditingField(null);
@@ -129,7 +168,7 @@ const Fields = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) {
-      setError('Field name is required');
+      setError(t('fields.requiredError'));
       return;
     }
     setSaving(true);
@@ -152,7 +191,7 @@ const Fields = () => {
       await fetchFields();
       closeModal();
     } catch (err) {
-      const msg = err.response?.data?.detail || 'Failed to save field. Make sure the backend is running.';
+      const msg = err.response?.data?.detail || t('fields.saveError');
       setError(typeof msg === 'string' ? msg : JSON.stringify(msg));
     } finally {
       setSaving(false);
@@ -180,16 +219,26 @@ const Fields = () => {
     <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <p style={{ color: 'var(--text-secondary)' }}>Manage your agricultural fields and assignments.</p>
-        <button className="btn-primary" onClick={openAdd}><Plus size={18}/> Add Field</button>
+        <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
+          {t('fields.subtitle')}
+        </p>
+        <button className="btn-primary" onClick={openAdd}>
+          <Plus size={18}/> {t('fields.addField')}
+        </button>
       </div>
 
       {fields.length === 0 && (
         <div className="glass-card" style={{ textAlign: 'center', padding: '3rem' }}>
           <Crop size={48} color="var(--text-muted)" style={{ marginBottom: '1rem' }} />
-          <h3 style={{ marginBottom: '0.5rem' }}>No Fields Yet</h3>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Add your first field to start monitoring soil, sensors, and crops.</p>
-          <button className="btn-primary" onClick={openAdd}><Plus size={18}/> Add Your First Field</button>
+          <h3 style={{ marginBottom: '0.5rem' }}>
+            {t('fields.noFieldsTitle')}
+          </h3>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+            {t('fields.noFieldsDesc')}
+          </p>
+          <button className="btn-primary" onClick={openAdd}>
+            <Plus size={18}/> {t('fields.addField')}
+          </button>
         </div>
       )}
 
@@ -210,7 +259,7 @@ const Fields = () => {
             <div style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', display: 'flex', gap: '0.4rem' }}>
               <button
                 onClick={(e) => openEdit(e, field)}
-                title="Edit field"
+                title={t('fields.editField')}
                 style={{
                   background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border-glass)',
                   borderRadius: '6px', padding: '0.35rem', cursor: 'pointer', color: 'var(--text-secondary)',
@@ -221,7 +270,7 @@ const Fields = () => {
               </button>
               <button
                 onClick={(e) => handleDelete(e, field)}
-                title={deleteConfirm === field.id ? 'Click again to confirm delete' : 'Delete field'}
+                title={deleteConfirm === field.id ? t('fields.confirmDelete') : t('fields.deleteField')}
                 style={{
                   background: deleteConfirm === field.id ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.08)',
                   border: deleteConfirm === field.id ? '1px solid rgba(239,68,68,0.5)' : '1px solid var(--border-glass)',
@@ -237,31 +286,31 @@ const Fields = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', paddingRight: '4.5rem' }}>
               <h3 style={{ margin: 0, fontSize: '1.25rem' }}>{field.name}</h3>
             </div>
-            <StatusBadge status="Online" />
+            <StatusBadge status="optimal" label={t('dashboard.sensorOnline')} />
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: 'var(--text-secondary)', marginTop: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Crop size={16} color="var(--text-muted)" /> 
-                <span>{field.crop_type || 'Not set'}</span>
+                <span>{field.crop_type ? (tCrop(field.crop_type) || field.crop_type) : '-'}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <MapPin size={16} color="var(--text-muted)" /> 
-                <span>{field.location || 'Not set'}</span>
+                <span>{field.location || '-'}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Maximize size={16} color="var(--text-muted)" /> 
-                <span>{field.area_hectares ? `${field.area_hectares} Hectares` : 'Not set'}</span>
+                <span>{field.area_hectares ? `${field.area_hectares} ${t('fields.plotArea')}` : '-'}</span>
               </div>
             </div>
 
             <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Soil Type:</span>
-              <span style={{ fontWeight: 600 }}>{field.soil_type || 'Not set'}</span>
+              <span style={{ color: 'var(--text-muted)' }}>{t('fields.soilType')}:</span>
+              <span style={{ fontWeight: 600 }}>{field.soil_type ? (tSoil(field.soil_type) || field.soil_type) : '-'}</span>
             </div>
 
             {selectedField?.id === field.id && (
               <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
-                <span className="badge badge-online">✓ Active Field</span>
+                <span className="badge badge-online">✓ {t('common.active')}</span>
               </div>
             )}
           </div>
@@ -273,7 +322,7 @@ const Fields = () => {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-              <h2>{editingField ? 'Edit Field' : 'Add New Field'}</h2>
+              <h2>{editingField ? t('fields.editField') : t('fields.addField')}</h2>
               <button onClick={closeModal} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.25rem' }}>
                 <X size={22} />
               </button>
@@ -287,13 +336,13 @@ const Fields = () => {
 
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label htmlFor="field-name">Field Name *</label>
-                <input id="field-name" name="name" value={form.name} onChange={handleChange} placeholder="e.g. North Field Alpha" required autoFocus />
+                <label htmlFor="field-name">{t('fields.fieldName')} *</label>
+                <input id="field-name" name="name" value={form.name} onChange={handleChange} placeholder={t('fields.fieldNamePlaceholder')} required autoFocus />
               </div>
 
               {/* Location Input with Interactive Autocomplete Suggestions */}
               <div className="form-group" style={{ position: 'relative' }} ref={locationContainerRef}>
-                <label htmlFor="field-location">Location</label>
+                <label htmlFor="field-location">{t('fields.location')}</label>
                 <div style={{ position: 'relative' }}>
                   <input
                     id="field-location"
@@ -301,7 +350,7 @@ const Fields = () => {
                     value={form.location}
                     onChange={handleChange}
                     onFocus={() => setShowLocDropdown(true)}
-                    placeholder="e.g. Type 'Punjab', 'Karnal', 'Nashik'..."
+                    placeholder={t('fields.locationPlaceholder')}
                     autoComplete="off"
                     list="location-datalist"
                   />
@@ -320,16 +369,16 @@ const Fields = () => {
                     left: 0,
                     right: 0,
                     marginTop: '4px',
-                    background: '#0f1a14',
+                    background: 'var(--bg-secondary)',
                     border: '1px solid var(--accent-primary)',
                     borderRadius: '8px',
-                    boxShadow: '0 12px 30px rgba(0,0,0,0.6), 0 0 15px rgba(34, 197, 94, 0.2)',
+                    boxShadow: '0 12px 30px rgba(0,0,0,0.6), 0 0 15px rgba(212, 163, 89, 0.2)',
                     zIndex: 1100,
                     maxHeight: '200px',
                     overflowY: 'auto'
                   }}>
                     <div style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem', color: 'var(--text-muted)', borderBottom: '1px solid var(--border-glass)', fontWeight: 600 }}>
-                      SUGGESTED LOCATIONS ({filteredLocations.length})
+                      {t('fields.suggestedLocationsCount', { count: filteredLocations.length })}
                     </div>
                     {filteredLocations.map((loc, idx) => (
                       <div
@@ -343,11 +392,11 @@ const Fields = () => {
                           gap: '0.5rem',
                           fontSize: '0.88rem',
                           color: form.location === loc ? 'var(--accent-primary)' : 'var(--text-primary)',
-                          background: form.location === loc ? 'rgba(34, 197, 94, 0.15)' : 'transparent',
+                          background: form.location === loc ? 'var(--accent-light)' : 'transparent',
                           transition: 'background 0.15s ease'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(34, 197, 94, 0.2)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = form.location === loc ? 'rgba(34, 197, 94, 0.15)' : 'transparent'}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--accent-light)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = form.location === loc ? 'var(--accent-light)' : 'transparent'}
                       >
                         <MapPin size={14} color="var(--accent-primary)" />
                         <span>{loc}</span>
@@ -360,31 +409,31 @@ const Fields = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="form-group">
-                  <label htmlFor="field-crop">Crop Type</label>
+                  <label htmlFor="field-crop">{t('fields.cropType')}</label>
                   <select id="field-crop" name="crop_type" value={form.crop_type} onChange={handleChange}>
-                    <option value="">Select crop...</option>
-                    {CROP_SUGGESTIONS.map(c => <option key={c} value={c}>{c}</option>)}
+                    <option value="">{t('fields.selectCrop')}</option>
+                    {CROP_SUGGESTIONS.map(c => <option key={c} value={c}>{tCrop(c)}</option>)}
                   </select>
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="field-soil">Soil Type</label>
+                  <label htmlFor="field-soil">{t('fields.soilType')}</label>
                   <select id="field-soil" name="soil_type" value={form.soil_type} onChange={handleChange}>
-                    <option value="">Select soil...</option>
-                    {SOIL_TYPES.map(s => <option key={s} value={s}>{s}</option>)}
+                    <option value="">{t('fields.selectSoil')}</option>
+                    {SOIL_TYPES.map(s => <option key={s} value={s}>{tSoil(s)}</option>)}
                   </select>
                 </div>
               </div>
 
               <div className="form-group">
-                <label htmlFor="field-area">Area (Hectares)</label>
+                <label htmlFor="field-area">{t('fields.areaHectares')}</label>
                 <input id="field-area" name="area_hectares" type="number" step="0.1" min="0" value={form.area_hectares} onChange={handleChange} placeholder="e.g. 4.5" />
               </div>
 
               <div className="form-actions">
-                <button type="button" className="btn-secondary" onClick={closeModal}>Cancel</button>
+                <button type="button" className="btn-secondary" onClick={closeModal}>{t('common.cancel')}</button>
                 <button type="submit" className="btn-primary" disabled={saving}>
-                  {saving ? 'Saving...' : <><Save size={16} /> {editingField ? 'Update Field' : 'Create Field'}</>}
+                  {saving ? t('fields.saving') : <><Save size={16} /> {editingField ? t('fields.saveField') : t('fields.addField')}</>}
                 </button>
               </div>
             </form>

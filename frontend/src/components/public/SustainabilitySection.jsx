@@ -9,9 +9,13 @@ import {
   CheckCircle2,
   TreeDeciduous
 } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const SustainabilitySection = () => {
-  const pillars = [
+  const { language } = useLanguage();
+  const isHi = language !== 'en';
+
+  const pillarsEn = [
     {
       title: 'Water Resource Stewardship',
       icon: Droplets,
@@ -46,6 +50,43 @@ const SustainabilitySection = () => {
     }
   ];
 
+  const pillarsHi = [
+    {
+      title: 'जल संसाधन प्रबंधन',
+      icon: Droplets,
+      metric: '३०% – ४०%',
+      metricLabel: 'सिंचाई जल उपयोग में कमी',
+      color: 'var(--accent-blue)',
+      description: 'केवल तभी सिंचाई करके जब जड़ क्षेत्र के सेंसर नमी की कमी का पता लगाते हैं, किसान अत्यधिक पानी देने से बचते हैं, ट्यूबवेल पर बिजली/डीजल की खपत कम करते हैं, और भूजल स्तर की रक्षा करते हैं।'
+    },
+    {
+      title: 'संतुलित पोषक अनुप्रयोग',
+      icon: Sprout,
+      metric: '२०% – २५%',
+      metricLabel: 'उर्वरक इनपुट लागत में बचत',
+      color: 'var(--accent-primary)',
+      description: 'वास्तविक समय नाइट्रोजन, फास्फोरस और पोटेशियम निगरानी यूरिया और डीएपी की अनावश्यक टॉप-ड्रेसिंग को रोकती है—पीने के पानी में नाइट्रेट के बहाव को रोकती है और मिट्टी के अम्लीकरण को थामती है।'
+    },
+    {
+      title: 'प्रारंभिक फसल तनाव पहचान',
+      icon: ShieldCheck,
+      metric: '३ से ५ दिन',
+      metricLabel: 'फसल मुरझाने से पहले पूर्व चेतावनी',
+      color: 'var(--accent-amber)',
+      description: 'भूमिगत टेलीमेट्री पत्तियों के पीले पड़ने या विकास रुकने से पहले ही नमी और तापीय तनाव की पहचान कर लेती है—जिससे समय पर सूक्ष्म सिंचाई संभव होती है और उपज क्षमता की रक्षा होती है।'
+    },
+    {
+      title: 'पीढ़ीगत मृदा स्वास्थ्य',
+      icon: TreeDeciduous,
+      metric: '१००% डेटा-संचालित',
+      metricLabel: 'निरंतर मृदा गुणवत्ता ट्रैकिंग',
+      color: 'var(--accent-secondary)',
+      description: 'मिट्टी के तटस्थ pH को बनाए रखना और विद्युत चालकता की निगरानी करना सुनिश्चित करता है कि जैविक सूक्ष्मजीव पनपें, जिससे भविष्य की पीढ़ियों के लिए कृषि भूमि की उत्पादकता सुरक्षित रहती है।'
+    }
+  ];
+
+  const pillars = isHi ? pillarsHi : pillarsEn;
+
   return (
     <section id="sustainability" className="site-section" style={{ backgroundColor: 'var(--bg-secondary)' }}>
       <div className="site-container">
@@ -54,13 +95,15 @@ const SustainabilitySection = () => {
         <div className="section-header">
           <div className="section-eyebrow">
             <Leaf size={14} />
-            <span>Ecological & Economic Impact</span>
+            <span>{isHi ? 'पारिस्थितिक एवं आर्थिक प्रभाव' : 'Ecological & Economic Impact'}</span>
           </div>
           <h2 className="section-title">
-            Grounded Sustainability: Saving Water, Fuel, and Soil.
+            {isHi ? 'धरातलीय स्थिरता: पानी, ईंधन और मिट्टी का संरक्षण।' : 'Grounded Sustainability: Saving Water, Fuel, and Soil.'}
           </h2>
           <p className="section-subtitle">
-            Precision agriculture is not just about maximizing yield—it is about achieving maximum output with the least possible resource consumption.
+            {isHi 
+              ? 'सटीक कृषि केवल पैदावार बढ़ाने के बारे में नहीं है—यह न्यूनतम संभावित संसाधनों के उपयोग के साथ अधिकतम उत्पादन प्राप्त करने के बारे में है।'
+              : 'Precision agriculture is not just about maximizing yield—it is about achieving maximum output with the least possible resource consumption.'}
           </p>
         </div>
 

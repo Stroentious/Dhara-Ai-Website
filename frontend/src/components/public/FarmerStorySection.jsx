@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 import { 
   HelpCircle, 
   Droplets, 
@@ -7,13 +8,38 @@ import {
   AlertTriangle, 
   CheckCircle, 
   ArrowRight, 
-  LineChart,
-  Layers,
   Leaf
 } from 'lucide-react';
 
 const FarmerStorySection = () => {
-  const farmerDilemmas = [
+  const { language } = useLanguage();
+
+  const farmerDilemmas = language !== 'en' ? [
+    {
+      icon: Droplets,
+      color: 'var(--accent-blue)',
+      question: 'क्या जड़ क्षेत्र बहुत सूखा है या अत्यधिक नम?',
+      context: 'सतह की मिट्टी अक्सर सूखी दिखती है जबकि जड़ क्षेत्र में नमी बनी रहती है, जिससे अतिरिक्त पानी, बिजली की बर्बादी और जड़ सड़न होती है।'
+    },
+    {
+      icon: FlaskConical,
+      color: 'var(--accent-primary)',
+      question: 'क्या NPK पोषक तत्व संतुलित हैं या बह रहे हैं?',
+      context: 'मिट्टी में मौजूद सक्रिय नाइट्रोजन और फास्फोरस जाने बिना यूरिया या डीएपी डालने से लागत बढ़ती है और मिट्टी की सेहत बिगड़ती है।'
+    },
+    {
+      icon: ThermometerSun,
+      color: 'var(--accent-amber)',
+      question: 'क्या मिट्टी का pH आवश्यक सूक्ष्म पोषक तत्वों को रोक रहा है?',
+      context: 'यदि pH अम्लीय या क्षारीय हो जाता है, तो मिट्टी में मौजूद होने पर भी फसलें डाले गए उर्वरक को अवशोषित नहीं कर पाती हैं।'
+    },
+    {
+      icon: AlertTriangle,
+      color: 'var(--accent-red)',
+      question: 'क्या दृश्यमान नुकसान से कुछ दिन पहले फसल तनाव का पता लगाया जा सकता है?',
+      context: 'जब तक पत्तियां मुड़ती या पीली पड़ती हैं, तब तक उपज का नुकसान तय हो चुका होता है। प्रारंभिक सेंसर टेलीमेट्री पहले ही तनाव प्रकट कर देती है।'
+    }
+  ] : [
     {
       icon: Droplets,
       color: 'var(--accent-blue)',
@@ -48,13 +74,17 @@ const FarmerStorySection = () => {
         <div className="section-header">
           <div className="section-eyebrow">
             <Leaf size={14} />
-            <span>The Human Reality of Agriculture</span>
+            <span>{language === 'hi' ? 'कृषि की मानवीय वास्तविकता' : 'The Human Reality of Agriculture'}</span>
           </div>
           <h2 className="section-title">
-            Farming is Full of Critical Decisions Every Single Day.
+            {language === 'hi'
+              ? 'खेती हर दिन महत्वपूर्ण और सटीक निर्णयों से भरी होती है।'
+              : 'Farming is Full of Critical Decisions Every Single Day.'}
           </h2>
           <p className="section-subtitle">
-            Every morning, a farmer faces complex agronomic questions with real financial and crop yield consequences. Traditional farming relies on visual intuition and post-damage reactions. Dhara AI brings clarity through continuous field data.
+            {language === 'hi'
+              ? 'हर सुबह, एक किसान के सामने जटिल कृषि प्रश्न होते हैं जिनके सीधे वित्तीय और फसल उपज परिणाम होते हैं। पारंपरिक खेती दृश्यमान अनुमान पर निर्भर करती है। धारा AI निरंतर खेत डेटा के माध्यम से स्पष्टता लाता है।'
+              : 'Every morning, a farmer faces complex agronomic questions with real financial and crop yield consequences. Traditional farming relies on visual intuition and post-damage reactions. Dhara AI brings clarity through continuous field data.'}
           </p>
         </div>
 
@@ -70,7 +100,7 @@ const FarmerStorySection = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <h3 style={{ fontSize: '1.35rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <HelpCircle size={22} color="var(--accent-amber)" />
-              <span>The Questions Every Grower Needs Answered:</span>
+              <span>{language === 'hi' ? 'वे प्रश्न जिनका उत्तर हर किसान को चाहिए:' : 'The Questions Every Grower Needs Answered:'}</span>
             </h3>
 
             {farmerDilemmas.map((item, idx) => {
@@ -129,15 +159,19 @@ const FarmerStorySection = () => {
                 textTransform: 'uppercase'
               }}>
                 <CheckCircle size={14} />
-                <span>The Dhara AI Resolution</span>
+                <span>{language === 'hi' ? 'धारा AI समाधान' : 'The Dhara AI Resolution'}</span>
               </div>
 
               <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--text-primary)' }}>
-                Bringing Physical Soil Signals Together in One Unified Interface.
+                {language === 'hi'
+                  ? 'भौतिक मृदा संकेतों को एक एकीकृत इंटरफ़ेस में एक साथ लाना।'
+                  : 'Bringing Physical Soil Signals Together in One Unified Interface.'}
               </h3>
 
               <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: '1.5rem' }}>
-                Instead of guessing soil conditions from surface appearance, Dhara AI connects subterranean 7-in-1 NPK probes and microclimate stations directly to your phone. 
+                {language === 'hi'
+                  ? 'सतही दिखावे से मिट्टी की स्थिति का अनुमान लगाने के बजाय, धारा AI भूमिगत 7-इन-1 NPK प्रोब और सूक्ष्म जलवायु स्टेशनों को सीधे आपके फोन से जोड़ता है।'
+                  : 'Instead of guessing soil conditions from surface appearance, Dhara AI connects subterranean 7-in-1 NPK probes and microclimate stations directly to your phone.'}
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -146,8 +180,12 @@ const FarmerStorySection = () => {
                     <CheckCircle size={14} color="var(--accent-primary)" />
                   </div>
                   <div>
-                    <span style={{ fontSize: '0.925rem', fontWeight: 700, color: 'var(--text-primary)' }}>Precision Irrigation Timing:</span>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Know precisely when root zones reach depletion threshold before wilting occurs.</p>
+                    <span style={{ fontSize: '0.925rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      {language === 'hi' ? 'सटीक सिंचाई समय:' : 'Precision Irrigation Timing:'}
+                    </span>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+                      {language === 'hi' ? 'मुरझाने से पहले ठीक से जानें कि जड़ क्षेत्र कब पानी की कमी की सीमा तक पहुंचता है।' : 'Know precisely when root zones reach depletion threshold before wilting occurs.'}
+                    </p>
                   </div>
                 </div>
 
@@ -156,8 +194,12 @@ const FarmerStorySection = () => {
                     <CheckCircle size={14} color="var(--accent-primary)" />
                   </div>
                   <div>
-                    <span style={{ fontSize: '0.925rem', fontWeight: 700, color: 'var(--text-primary)' }}>Targeted Nutrient Dosing:</span>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Understand real-time Nitrogen (N), Phosphorus (P), and Potassium (K) availability.</p>
+                    <span style={{ fontSize: '0.925rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      {language === 'hi' ? 'लक्षित पोषक तत्व खुराक:' : 'Targeted Nutrient Dosing:'}
+                    </span>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+                      {language === 'hi' ? 'वास्तविक समय में नाइट्रोजन (N), फास्फोरस (P) और पोटैशियम (K) की उपलब्धता को समझें।' : 'Understand real-time Nitrogen (N), Phosphorus (P), and Potassium (K) availability.'}
+                    </p>
                   </div>
                 </div>
 
@@ -166,8 +208,12 @@ const FarmerStorySection = () => {
                     <CheckCircle size={14} color="var(--accent-primary)" />
                   </div>
                   <div>
-                    <span style={{ fontSize: '0.925rem', fontWeight: 700, color: 'var(--text-primary)' }}>Agronomy AI Assistant:</span>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Ask questions in plain language and get recommendations rooted in your field's live sensor data.</p>
+                    <span style={{ fontSize: '0.925rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      {language === 'hi' ? 'एग्रोनॉमी AI सहायक:' : 'Agronomy AI Assistant:'}
+                    </span>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+                      {language === 'hi' ? 'सरल भाषा में प्रश्न पूछें और अपने खेत के लाइव सेंसर डेटा पर आधारित सिफारिशें प्राप्त करें।' : "Ask questions in plain language and get recommendations rooted in your field's live sensor data."}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -184,15 +230,19 @@ const FarmerStorySection = () => {
               gap: '1rem'
             }}>
               <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Field Intelligence Status</div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent-primary)' }}>Continuous 24/7 Soil Monitoring</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  {language === 'hi' ? 'खेत आसूचना स्थिति' : 'Field Intelligence Status'}
+                </div>
+                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
+                  {language === 'hi' ? 'निरंतर 24/7 मृदा निगरानी सक्रिय' : 'Continuous 24/7 Soil Monitoring'}
+                </div>
               </div>
               <a 
                 href="#ecosystem" 
                 className="btn-outline"
                 style={{ fontSize: '0.8rem', padding: '0.5rem 0.9rem' }}
               >
-                <span>See Ecosystem</span>
+                <span>{language === 'hi' ? 'इकोसिस्टम देखें' : 'See Ecosystem'}</span>
                 <ArrowRight size={14} />
               </a>
             </div>

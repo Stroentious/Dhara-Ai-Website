@@ -3,25 +3,25 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 /**
- * Rain Component — Realistic Cinematic Rain Particle System
+ * Rain Component — Cinematic Realistic Agricultural Rain Particle System
  * 
  * Scroll Timing:
- * - Begins at 0% scroll (~0.38 intensity gentle rain)
- * - Increases gradually in intensity from 0% -> 16% scroll (up to 1.0 full rain)
- * - Smoothly fades out completely between 16% -> 20% scroll
- * - Exactly at 20% scroll and beyond: 100% invisible (visible = false, 0 GPU draw overhead)
+ * - Starts at exactly 0.0 (0% scroll)
+ * - Gradually builds density from 0% -> 18% scroll (nurturing the soil and germinating seed)
+ * - Smoothly fades out from 18% -> 30% scroll (completely gone by 30% scroll)
+ * - At 30% scroll and beyond: visible = false (0 GPU overhead)
  * 
- * Realism & Depth:
- * - High-speed GPU particle extrusion with natural motion blur falloff
- * - Foreground drops slightly larger, faster, and longer
- * - Midground & background drops finer, softer, and slower
- * - Subtle natural wind slant (2.5 degrees)
- * - 60 FPS performance across all devices via single buffer geometry and GPU vertex math
+ * Visual Architecture:
+ * - GPU vertex shader quad extrusion with camera-aligned billboarding
+ * - 3 Depth Tiers (Background mist, Midground soil-level drops, Foreground streaks)
+ * - Tapered drop profiles with natural motion-blur gradient
+ * - Gentle natural wind slant (~2.5 degrees)
+ * - Zero per-frame React state updates; runs at 60+ FPS on all devices
  */
 
-const RAIN_VERT = /* glsl */`
+const RAIN_VERTEX_SHADER = /* glsl */`
   attribute vec3 aCorner;     // (-1/1 width, 0/1 length)
-  attribute vec3 aSpawnPos;   // (x, y, z) base volume spawn position
+  attribute vec3 aSpawnPos;   // Base spawn volume (x, y, z)
   attribute float aSpeed;
   attribute float aLength;
   attribute float aWidth;
@@ -39,19 +39,19 @@ const RAIN_VERT = /* glsl */`
   void main() {
     vUv = vec2(aCorner.x * 0.5 + 0.5, aCorner.y);
 
-    // Continuous falling motion computed entirely on the GPU
+    // Continuous falling motion calculated purely on GPU
     float fallDist = uTime * aSpeed;
     float y = mod(aSpawnPos.y - fallDist - uYMin, uYSpan) + uYMin;
 
-    // Subtle natural wind drift along X
+    // Natural wind slant along X axis
     float x = aSpawnPos.x + (uYSpan - (y - uYMin)) * uWindSlant;
     float z = aSpawnPos.z;
 
     vec3 dropPos = vec3(x, y, z);
 
-    // Billboarding: Orient streak quad toward camera
+    // Billboarding: Align streak normal toward camera along fall vector
     vec3 toCam = normalize(cameraPosition - dropPos);
-    vec3 upDir = normalize(vec3(-uWindSlant, 1.0, 0.0)); // aligned with fall vector
+    vec3 upDir = normalize(vec3(-uWindSlant, 1.0, 0.0));
     vec3 rightDir = normalize(cross(upDir, toCam));
 
     // Expand vertex along streak width and length
@@ -66,7 +66,7 @@ const RAIN_VERT = /* glsl */`
   }
 `;
 
-const RAIN_FRAG = /* glsl */`
+const RAIN_FRAGMENT_SHADER = /* glsl */`
   uniform vec3 uRainColor;
 
   varying float vDropAlpha;
@@ -75,10 +75,10 @@ const RAIN_FRAG = /* glsl */`
   void main() {
     if (vDropAlpha <= 0.002) discard;
 
-    // Tapered streak: denser at the falling head (bottom), soft fading tail (top)
-    float lenFade = smoothstep(1.0, 0.06, vUv.y);
+    // Tapered streak profile: denser head at bottom, soft fading tail at top
+    float lenFade = smoothstep(1.0, 0.05, vUv.y);
     
-    // Soft horizontal feathering
+    // Soft horizontal feathering to avoid rigid lines
     float edgeDist = abs(vUv.x - 0.5) * 2.0;
     float edgeFeather = 1.0 - edgeDist * edgeDist;
 
@@ -90,11 +90,11 @@ const RAIN_FRAG = /* glsl */`
   }
 `;
 
-export default function Rain({ progressRef, quality = 'high', isBW = false }) {
+export default function Rain({ progressRef, quality = 'high', isBW = true }) {
   const meshRef = useRef();
 
-  // Scale drop count gracefully to hardware tier
-  const dropCount = quality === 'low' ? 700 : quality === 'medium' ? 1200 : 1800;
+  // Tiered particle count for smooth 60 FPS across devices
+  const dropCount = quality === 'low' ? 800 : quality === 'medium' ? 1400 : 2000;
 
   const { rainGeo, rainMat } = useMemo(() => {
     const geo = new THREE.BufferGeometry();
@@ -111,41 +111,41 @@ export default function Rain({ progressRef, quality = 'high', isBW = false }) {
     const indices = new Uint32Array(indexCount);
 
     for (let i = 0; i < dropCount; i++) {
-      // 3 Depth Tiers: 0 = Background, 1 = Midground, 2 = Foreground
+      // 3 Depth tiers: Background, Midground, Foreground
       const depthRand = Math.random();
       let depthZ, baseSpeed, baseLength, baseWidth, baseAlpha;
 
       if (depthRand < 0.35) {
-        // Background: finer, softer, slower drops
-        depthZ = -1.4 + Math.random() * 1.1; // -1.4 to -0.3
-        baseSpeed = 7.2 + Math.random() * 2.4;
-        baseLength = 0.14 + Math.random() * 0.08;
-        baseWidth = 0.0024;
-        baseAlpha = 0.28 + Math.random() * 0.18;
-      } else if (depthRand < 0.75) {
-        // Midground: balanced natural raindrops
-        depthZ = -0.3 + Math.random() * 1.2; // -0.3 to 0.9
-        baseSpeed = 9.8 + Math.random() * 3.2;
-        baseLength = 0.22 + Math.random() * 0.11;
-        baseWidth = 0.0036;
-        baseAlpha = 0.45 + Math.random() * 0.25;
+        // Background: finer, softer, slower drops falling over landscape
+        depthZ = -1.6 + Math.random() * 1.1; // -1.6 to -0.5
+        baseSpeed = 7.5 + Math.random() * 2.5;
+        baseLength = 0.13 + Math.random() * 0.07;
+        baseWidth = 0.0022;
+        baseAlpha = 0.26 + Math.random() * 0.16;
+      } else if (depthRand < 0.78) {
+        // Midground: balanced natural raindrops falling onto topsoil & seed
+        depthZ = -0.5 + Math.random() * 1.2; // -0.5 to 0.7
+        baseSpeed = 10.2 + Math.random() * 3.0;
+        baseLength = 0.20 + Math.random() * 0.10;
+        baseWidth = 0.0034;
+        baseAlpha = 0.42 + Math.random() * 0.22;
       } else {
-        // Foreground: slightly larger, faster, and longer streaks
-        depthZ = 0.9 + Math.random() * 1.0;  // 0.9 to 1.9
-        baseSpeed = 13.5 + Math.random() * 4.0;
-        baseLength = 0.32 + Math.random() * 0.14;
-        baseWidth = 0.0048;
-        baseAlpha = 0.58 + Math.random() * 0.28;
+        // Foreground: longer, faster motion-blurred streaks
+        depthZ = 0.7 + Math.random() * 1.1;  // 0.7 to 1.8
+        baseSpeed = 14.0 + Math.random() * 3.8;
+        baseLength = 0.30 + Math.random() * 0.14;
+        baseWidth = 0.0044;
+        baseAlpha = 0.54 + Math.random() * 0.26;
       }
 
-      // Spread spawn across scene envelope
-      const spawnX = (Math.random() - 0.5) * 8.2;
-      const spawnY = -0.35 + Math.random() * 3.85;
+      // Span across visible camera frustum
+      const spawnX = (Math.random() - 0.5) * 8.5;
+      const spawnY = -0.32 + Math.random() * 3.9;
 
       const vBase = i * 4;
       const iBase = i * 6;
 
-      // 4 corners of the streak quad
+      // 4 corners of streak quad
       const quadCorners = [
         [-1, 0, 0],
         [ 1, 0, 0],
@@ -155,7 +155,6 @@ export default function Rain({ progressRef, quality = 'high', isBW = false }) {
 
       for (let c = 0; c < 4; c++) {
         const vIdx = vBase + c;
-        // Position initialized to 0 (GPU positions via aSpawnPos & aCorner)
         positions[vIdx * 3 + 0] = 0;
         positions[vIdx * 3 + 1] = 0;
         positions[vIdx * 3 + 2] = 0;
@@ -174,7 +173,7 @@ export default function Rain({ progressRef, quality = 'high', isBW = false }) {
         alphaMods[vIdx] = baseAlpha;
       }
 
-      // Two triangles: (0, 1, 2) and (2, 1, 3)
+      // Indices for two triangles per quad
       indices[iBase + 0] = vBase + 0;
       indices[iBase + 1] = vBase + 1;
       indices[iBase + 2] = vBase + 2;
@@ -193,15 +192,15 @@ export default function Rain({ progressRef, quality = 'high', isBW = false }) {
     geo.setIndex(new THREE.BufferAttribute(indices, 1));
 
     const mat = new THREE.ShaderMaterial({
-      vertexShader: RAIN_VERT,
-      fragmentShader: RAIN_FRAG,
+      vertexShader: RAIN_VERTEX_SHADER,
+      fragmentShader: RAIN_FRAGMENT_SHADER,
       uniforms: {
         uTime: { value: 0 },
-        uIntensity: { value: 0.38 },
-        uYMin: { value: -0.35 },
-        uYSpan: { value: 3.85 },
-        uWindSlant: { value: 0.042 }, // Subtle ~2.4 degree natural wind slant
-        uRainColor: { value: isBW ? new THREE.Color('#93c5fd') : new THREE.Color('#dbeafe') },
+        uIntensity: { value: 0.35 },
+        uYMin: { value: -0.32 },
+        uYSpan: { value: 3.9 },
+        uWindSlant: { value: 0.040 }, // Gentle natural wind slant
+        uRainColor: { value: isBW ? new THREE.Color('#94a3b8') : new THREE.Color('#cce0ff') },
       },
       transparent: true,
       depthWrite: false,
@@ -223,8 +222,8 @@ export default function Rain({ progressRef, quality = 'high', isBW = false }) {
   useFrame((state) => {
     const p = progressRef?.current || 0;
 
-    // Hard cutoff: above 20% scroll, no rain remains visible (zero GPU draw overhead)
-    if (p >= 0.20) {
+    // Hard cutoff: exactly at 30% scroll and beyond, no rain is drawn (zero GPU cost)
+    if (p >= 0.30) {
       if (meshRef.current && meshRef.current.visible) {
         meshRef.current.visible = false;
       }
@@ -236,15 +235,15 @@ export default function Rain({ progressRef, quality = 'high', isBW = false }) {
     }
 
     // Smooth intensity progression:
-    // 0.0 -> 0.16: Rain begins at ~0.38 and builds up gradually to 1.0 (heavy rain)
-    // 0.16 -> 0.20: Smoothly fades completely out to 0.0
+    // 0.0 -> 0.18: Starts at 0.32 and smoothly increases to 1.0 peak density
+    // 0.18 -> 0.30: Smoothly and gradually fades out from 1.0 to 0.0
     let intensity = 0.0;
-    if (p <= 0.16) {
-      const t = p / 0.16;
-      intensity = THREE.MathUtils.lerp(0.38, 1.0, t);
+    if (p <= 0.18) {
+      const t = p / 0.18;
+      intensity = THREE.MathUtils.lerp(0.32, 1.0, t);
     } else {
-      const t = (p - 0.16) / 0.04;
-      intensity = 1.0 - THREE.MathUtils.smoothstep(t, 0.0, 1.0);
+      const t = (p - 0.18) / 0.12;
+      intensity = (1.0 - THREE.MathUtils.smoothstep(t, 0.0, 1.0));
     }
 
     if (rainMat) {

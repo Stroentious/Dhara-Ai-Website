@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet, Link } from 'react-router-dom';
+import { NavLink, Outlet, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Map, Radio, Droplets, FlaskConical, 
   CloudSun, LineChart, Bell, MessageSquare, Settings, 
@@ -8,25 +8,51 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useField } from '../context/FieldContext';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
+import LanguageSelector from './LanguageSelector';
+import DharaAssistant3D from './three/DharaAssistant3D';
+import GuideBeacon3D from './three/GuideBeacon3D';
+import OnboardingGuide from './OnboardingGuide';
+import AskDharaModal from './AskDharaModal';
+
+const CROP_MAP_HI = {
+  'Wheat': 'गेहूं',
+  'Rice': 'धान',
+  'Cotton': 'कपास',
+  'Corn': 'मक्का',
+  'Maize': 'मक्का',
+  'Soybean': 'सोयाबीन',
+  'Mustard': 'सरसों',
+  'Sugarcane': 'गन्ना',
+  'Tomato': 'टमाटर',
+  'Potato': 'आलू',
+};
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [forceGuide, setForceGuide] = useState(false);
   const { logout, currentUser } = useAuth();
   const { fields, selectedField, setSelectedField } = useField();
   const { theme, toggleTheme, actualTheme } = useTheme();
+  const { language, toggleLanguage, t, tCrop } = useLanguage();
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/fields', label: 'Fields', icon: Map },
-    { path: '/sensors', label: 'Sensors', icon: Radio },
-    { path: '/irrigation', label: 'Irrigation', icon: Droplets },
-    { path: '/fertilizer', label: 'Fertilizer & NPK', icon: FlaskConical },
-    { path: '/weather', label: 'Weather', icon: CloudSun },
-    { path: '/analytics', label: 'Analytics', icon: LineChart },
-    { path: '/alerts', label: 'Alerts', icon: Bell },
-    { path: '/chat', label: 'DHARA AI Chat', icon: MessageSquare },
-    { path: '/settings', label: 'Settings', icon: Settings },
+    { path: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard, tourKey: 'dashboard-nav' },
+    { path: '/fields', label: t('nav.fields'), icon: Map, tourKey: 'fields-nav' },
+    { path: '/sensors', label: t('nav.sensors'), icon: Radio, tourKey: 'sensors-nav' },
+    { path: '/irrigation', label: t('nav.irrigation'), icon: Droplets, tourKey: 'irrigation-nav' },
+    { path: '/fertilizer', label: t('nav.fertilizer'), icon: FlaskConical, tourKey: 'fertilizer-nav' },
+    { path: '/weather', label: t('nav.weather'), icon: CloudSun, tourKey: 'weather-nav' },
+    { path: '/analytics', label: t('nav.analytics'), icon: LineChart, tourKey: 'analytics-nav' },
+    { path: '/alerts', label: t('nav.alerts'), icon: Bell, tourKey: 'alerts-nav' },
+    { path: '/chat', label: t('nav.chat'), icon: MessageSquare, tourKey: 'chat-nav' },
+    { path: '/settings', label: t('nav.settings'), icon: Settings, tourKey: 'settings-nav' },
   ];
+
+  const location = useLocation();
+  const currentNavItem = navItems.find(item => location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.startsWith(item.path)));
+  const pageTitle = currentNavItem ? currentNavItem.label : t('nav.dashboard');
 
   const closeSidebar = () => setSidebarOpen(false);
 
@@ -59,13 +85,14 @@ const Layout = () => {
           </button>
         </div>
 
-        <nav style={{ flex: 1, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', overflowY: 'auto' }}>
+        <nav data-tour="sidebar-nav" style={{ flex: 1, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', overflowY: 'auto' }}>
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
+                data-tour={item.tourKey}
                 onClick={closeSidebar}
                 style={({ isActive }) => ({
                   display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.7rem 0.9rem',
@@ -100,7 +127,7 @@ const Layout = () => {
               }}
             >
               <Globe size={16} />
-              <span>Public Website</span>
+              <span>{t('nav.publicWebsite')}</span>
               <ExternalLink size={12} style={{ marginLeft: 'auto' }} />
             </Link>
           </div>
@@ -114,7 +141,7 @@ const Layout = () => {
             </div>
             <div style={{ overflow: 'hidden' }}>
               <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                {currentUser?.name || 'Demo Farmer'}
+                {currentUser?.name || t('common.demoFarmer')}
               </p>
               <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                 {currentUser?.email || 'demo@dhara.ai'}
@@ -138,7 +165,7 @@ const Layout = () => {
             }}
           >
             <LogOut size={15} />
-            <span>Sign Out</span>
+            <span>{t('nav.logout')}</span>
           </button>
         </div>
       </aside>
@@ -150,7 +177,7 @@ const Layout = () => {
         <header style={{ 
           height: '65px', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center',
           justifyContent: 'space-between', padding: '0 1.5rem', 
-          background: actualTheme === 'dark' ? 'rgba(10, 15, 13, 0.85)' : 'rgba(255, 255, 255, 0.85)', 
+          background: actualTheme === 'dark' ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.85)', 
           backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 30
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -162,14 +189,18 @@ const Layout = () => {
               <Menu size={22} />
             </button>
             <h2 style={{ fontSize: '1.15rem', margin: 0, fontWeight: 700, color: 'var(--text-primary)' }} className="page-title">
-              Dashboard
+              {pageTitle}
             </h2>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {/* 3D Guide Beacon Trigger */}
+            <GuideBeacon3D onClick={() => setForceGuide(true)} />
+
             {/* Field Dropdown */}
             {fields && fields.length > 0 && (
               <select 
+                data-tour="field-selector"
                 value={selectedField?.id || ''} 
                 onChange={(e) => setSelectedField(fields.find(f => f.id == e.target.value))}
                 style={{ 
@@ -183,9 +214,16 @@ const Layout = () => {
                   fontWeight: 600
                 }}
               >
-                {fields.map(f => <option key={f.id} value={f.id}>{f.name} ({f.crop_type})</option>)}
+                {fields.map(f => (
+                  <option key={f.id} value={f.id}>
+                    {f.name} ({tCrop(f.crop_type) || f.crop_type})
+                  </option>
+                ))}
               </select>
             )}
+
+            {/* Complete Indian Language Selector (22 Languages + English) */}
+            <LanguageSelector variant="compact" />
 
             {/* Theme Toggle Button */}
             <button
@@ -208,7 +246,7 @@ const Layout = () => {
             </button>
             
             {/* Notifications Bell */}
-            <Link to="/alerts" style={{ position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <Link to="/alerts" data-tour="alerts-bell" style={{ position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
               <Bell size={19} color="var(--text-secondary)" />
               <span style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'var(--accent-red)', width: '8px', height: '8px', borderRadius: '50%' }}></span>
             </Link>
@@ -221,11 +259,20 @@ const Layout = () => {
         </div>
       </main>
 
+      {/* Floating 3D AI Chatbot Avatar */}
+      <DharaAssistant3D onClick={() => setIsVoiceModalOpen(true)} />
+
+      {/* Interactive Spotlight Onboarding Guide */}
+      <OnboardingGuide forceShow={forceGuide} onCloseForce={() => setForceGuide(false)} />
+
+      {/* Ask DHARA AI Voice Modal */}
+      <AskDharaModal isOpen={isVoiceModalOpen} onClose={() => setIsVoiceModalOpen(false)} />
+
       <style>{`
         @media (min-width: 769px) {
           .sidebar { transform: translateX(0) !important; }
           .mobile-menu-btn { display: none !important; }
-          .mobile-close { display: none !important; }
+          .mobile-close { display: block !important; }
         }
         @media (max-width: 768px) {
           main { margin-left: 0 !important; }

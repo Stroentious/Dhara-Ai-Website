@@ -14,7 +14,10 @@
     "react-router-dom": "^6.26.2",
     "recharts": "^2.12.7",
     "lucide-react": "^0.441.0",
-    "axios": "^1.7.7"
+    "axios": "^1.7.7",
+    "three": "^0.168.0",
+    "@react-three/fiber": "^8.18.0",
+    "@react-three/drei": "^9.122.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.5",

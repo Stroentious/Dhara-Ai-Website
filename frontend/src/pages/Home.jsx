@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import Navbar from '../components/public/Navbar';
 import HeroSection from '../components/public/HeroSection';
 import FarmerStorySection from '../components/public/FarmerStorySection';
@@ -13,9 +14,11 @@ import SustainabilitySection from '../components/public/SustainabilitySection';
 import Footer from '../components/public/Footer';
 
 const Home = () => {
+  const { language, t } = useLanguage();
+
   useEffect(() => {
-    document.title = 'DHARA AI — Intelligent Agriculture, Powered by Real Field Data';
-  }, []);
+    document.title = t('landing.pageTitle');
+  }, [language, t]);
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-primary)' }}>

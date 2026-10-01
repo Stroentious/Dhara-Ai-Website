@@ -8,3 +8,10 @@
 - **Manual Launch Only**:
   - The developer retains 100% control over when processes start.
   - Processes must only start when the user explicitly runs manual commands.
+
+## STRICT GIT & REPOSITORY CONTROL
+
+- **No Automatic Git Push or Pull**:
+  - NEVER automatically execute `git push`, `git pull`, `git fetch`, or auto-sync with remote repositories.
+  - Push and pull operations must ONLY occur when the user explicitly commands it.
+

@@ -1,23 +1,93 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 import { 
   MapPin, 
   Radio, 
-  Cpu, 
   LineChart, 
   BellRing, 
   Sparkles, 
   CheckCircle2, 
   ArrowRight,
-  Droplets,
-  Layers,
   Zap,
   Activity
 } from 'lucide-react';
 
 const EcosystemFlowSection = () => {
+  const { language } = useLanguage();
   const [activeStep, setActiveStep] = useState(1);
 
-  const flowSteps = [
+  const flowSteps = language !== 'en' ? [
+    {
+      id: 0,
+      badge: 'चरण 01',
+      title: 'कृषि खेत व भूखंड',
+      icon: MapPin,
+      color: 'var(--accent-primary)',
+      summary: 'वास्तविक कृषि भूमि, मिट्टी के क्षेत्र और विभिन्न फसलें (गेहूं, कपास, धान, मक्का)।',
+      detail: 'खेत को मिट्टी की बनावट (दोमट, चिकनी, रेतीली) और फसल वृद्धि चरण के अनुसार सूक्ष्म क्षेत्रों में विभाजित किया जाता है।',
+      metrics: ['खेत का क्षेत्रफल (हेक्टेयर)', 'फसल विकास चरण', 'मिट्टी की बनावट का प्रकार']
+    },
+    {
+      id: 1,
+      badge: 'चरण 02',
+      title: '7-इन-1 मृदा सेंसर',
+      icon: Radio,
+      color: 'var(--accent-secondary)',
+      summary: 'भूमिगत प्रोब जो हर कुछ मिनटों में 7 प्रमुख मृदा स्वास्थ्य मानकों को मापते हैं।',
+      detail: 'सक्रिय जड़ क्षेत्र में स्थापित औद्योगिक-ग्रेड RS485/Modbus स्टेनलेस स्टील सेंसर नमी, तापमान, pH, विद्युत चालकता (EC) और उपलब्ध NPK को मापते हैं।',
+      metrics: ['मृदा नमी (0–100%)', 'NPK स्तर (mg/kg)', 'मृदा pH (3–9)', 'तापमान एवं EC']
+    },
+    {
+      id: 2,
+      badge: 'चरण 03',
+      title: 'लो-पावर टेलीमेट्री',
+      icon: Zap,
+      color: 'var(--accent-blue)',
+      summary: 'सौर ऊर्जा से चलने वाले LoRa नोड सेलुलर नेटवर्क के बिना लंबी दूरी तक पैकेट भेजते हैं।',
+      detail: 'खेत के नोड सेंसर डेटा को पैकेटाइज करते हैं और 868/915 MHz LoRa मेश के जरिए खेत के गेटवे तक पहुंचाते हैं।',
+      metrics: ['LoRaWAN 868/915 MHz', 'सौर ऊर्जा स्वायत्तता', 'शून्य डेटा लागत मेश']
+    },
+    {
+      id: 3,
+      badge: 'चरण 04',
+      title: 'डेटा विश्लेषण इंजन',
+      icon: LineChart,
+      color: 'var(--accent-amber)',
+      summary: 'टेलीमेट्री इंजन समय-श्रृंखला रुझानों और सूक्ष्म जलवायु पूर्वानुमानों को एकत्रित करता है।',
+      detail: 'डेटा को उच्च-प्रदर्शन डेटाबेस में संग्रहीत किया जाता है और 24 घंटे व 7 दिनों के पानी के उपभोग की गणना की जाती है।',
+      metrics: ['सब-सेकंड डेटा अंतर्ग्रहण', 'नमी हास वक्र', 'पोषक तत्व क्षरण रुझान']
+    },
+    {
+      id: 4,
+      badge: 'चरण 05',
+      title: 'सक्रिय खेत अलर्ट',
+      icon: BellRing,
+      color: 'var(--accent-red)',
+      summary: 'स्वचालित सीमा निगरानी फसल में तनाव आने से पहले ही किसान को सूचित करती है।',
+      detail: 'जब नमी मुरझाने के बिंदु से नीचे जाती है या उर्वरक कम होता है, तो त्वरित सूचना भेजी जाती है ताकि नुकसान से बचा जा सके।',
+      metrics: ['SMS और WhatsApp अलर्ट', 'थ्रेसहोल्ड ट्रिगर', 'शून्य गलत अलार्म']
+    },
+    {
+      id: 5,
+      badge: 'चरण 06',
+      title: 'धारा AI इंजन',
+      icon: Sparkles,
+      color: 'var(--accent-primary)',
+      summary: 'विशिष्ट एग्रोनॉमिक AI लाइव मिट्टी के संकेतों और मौसम का विश्लेषण करता है।',
+      detail: 'धारा AI फसल-विशिष्ट कृषि ज्ञान को खेत के लाइव सेंसर रीडिंग और 7-दिवसीय मौसम पूर्वानुमान के साथ जोड़कर सलाह देता है।',
+      metrics: ['सटीक LLM रीजनिंग', 'फसल-विशिष्ट आधार रेखा', 'ऐतिहासिक संदर्भ']
+    },
+    {
+      id: 6,
+      badge: 'चरण 07',
+      title: 'कार्रवाई योग्य निर्णय',
+      icon: CheckCircle2,
+      color: 'var(--accent-secondary)',
+      summary: 'स्पष्ट और ठोस निर्णय: सटीक सिंचाई करें, सही NPK दें, उपज सुरक्षित रखें।',
+      detail: 'किसान को स्पष्ट कार्ययोजना मिलती है: उदा., "आज रात 45 मिनट के लिए ड्रिप चलाएं; बारिश के बाद शुक्रवार तक DAP का प्रयोग रोकें।"',
+      metrics: ['30-40% पानी की बचत', 'उर्वरक का अनुकूलन', 'सुरक्षित फसल उपज']
+    }
+  ] : [
     {
       id: 0,
       badge: 'Step 01',
@@ -75,7 +145,7 @@ const EcosystemFlowSection = () => {
       icon: Sparkles,
       color: 'var(--accent-primary)',
       summary: 'Domain-specific agronomic AI reasons across live soil signals and weather.',
-      detail: 'Dhara AI combines crop-specific agronomic knowledge with your field\'s live sensor readings and 7-day weather forecasts to generate contextual, grounded recommendations.',
+      detail: "Dhara AI combines crop-specific agronomic knowledge with your field's live sensor readings and 7-day weather forecasts to generate contextual, grounded recommendations.",
       metrics: ['Grounded LLM Reasoning', 'Crop-Specific Baselines', 'Historical Context']
     },
     {
@@ -90,7 +160,7 @@ const EcosystemFlowSection = () => {
     }
   ];
 
-  const current = flowSteps[activeStep];
+  const current = flowSteps[activeStep] || flowSteps[0];
   const CurrentIcon = current.icon;
 
   return (
@@ -101,13 +171,15 @@ const EcosystemFlowSection = () => {
         <div className="section-header">
           <div className="section-eyebrow">
             <Activity size={14} />
-            <span>Connected Agricultural Architecture</span>
+            <span>{language === 'hi' ? 'कनेक्टेड कृषि आर्किटेक्चर' : 'Connected Agricultural Architecture'}</span>
           </div>
           <h2 className="section-title">
-            From Field to Intelligence: How Dhara AI Works
+            {language === 'hi' ? 'खेत से बुद्धिमत्ता तक: धारा AI कैसे काम करता है' : 'From Field to Intelligence: How Dhara AI Works'}
           </h2>
           <p className="section-subtitle">
-            A seamless ecosystem connecting physical soil in the ground all the way to intelligent decision support on your phone or laptop.
+            {language === 'hi'
+              ? 'एक सहज इकोसिस्टम जो जमीन की मिट्टी से लेकर आपके फोन या कंप्यूटर पर बुद्धिमान निर्णय सहायता तक सब कुछ जोड़ता है।'
+              : 'A seamless ecosystem connecting physical soil in the ground all the way to intelligent decision support on your phone or laptop.'}
           </p>
         </div>
 
@@ -200,7 +272,7 @@ const EcosystemFlowSection = () => {
               </div>
               <div>
                 <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase' }}>
-                  {current.badge} In The Dhara Ecosystem
+                  {current.badge} • {language === 'hi' ? 'धारा इकोसिस्टम में' : 'In The Dhara Ecosystem'}
                 </span>
                 <h3 style={{ fontSize: '1.65rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
                   {current.title}
@@ -222,14 +294,14 @@ const EcosystemFlowSection = () => {
                 className="btn-secondary"
                 style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
               >
-                Previous Stage
+                {language === 'hi' ? 'पिछला चरण' : 'Previous Stage'}
               </button>
               <button 
                 onClick={() => setActiveStep(prev => (prev < flowSteps.length - 1 ? prev + 1 : 0))}
                 className="btn-primary"
                 style={{ fontSize: '0.85rem', padding: '0.5rem 1.25rem' }}
               >
-                <span>Next Stage</span>
+                <span>{language === 'hi' ? 'अगला चरण' : 'Next Stage'}</span>
                 <ArrowRight size={14} />
               </button>
             </div>
@@ -247,10 +319,10 @@ const EcosystemFlowSection = () => {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                Key Operational Signals
+                {language === 'hi' ? 'प्रमुख परिचालन संकेत' : 'Key Operational Signals'}
               </span>
               <span className="badge badge-online">
-                Active Telemetry
+                {language === 'hi' ? 'सक्रिय टेलीमेट्री' : 'Active Telemetry'}
               </span>
             </div>
 
@@ -280,13 +352,15 @@ const EcosystemFlowSection = () => {
               marginTop: '0.5rem',
               padding: '0.75rem',
               borderRadius: '8px',
-              backgroundColor: 'rgba(22, 163, 74, 0.08)',
-              border: '1px dashed var(--accent-secondary)',
+              backgroundColor: 'rgba(212, 163, 89, 0.08)',
+              border: '1px dashed var(--accent-primary)',
               fontSize: '0.8rem',
               color: 'var(--text-secondary)',
               textAlign: 'center'
             }}>
-              🌿 Seamless bidirectional data flow from ground level to cloud intelligence.
+              {language === 'hi'
+                ? '🌿 जमीन के स्तर से क्लाउड बुद्धिमत्ता तक सहज द्विदिशी डेटा प्रवाह।'
+                : '🌿 Seamless bidirectional data flow from ground level to cloud intelligence.'}
             </div>
           </div>
 

@@ -12,11 +12,14 @@ import {
   User,
   Bot
 } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const AiAssistantSection = () => {
+  const { language } = useLanguage();
+  const isHi = language !== 'en';
   const [selectedPromptIdx, setSelectedPromptIdx] = useState(0);
 
-  const demoConversations = [
+  const demoConversationsEn = [
     {
       id: 0,
       question: 'Why is soil moisture dropping faster than usual in North Field?',
@@ -51,6 +54,42 @@ const AiAssistantSection = () => {
     }
   ];
 
+  const demoConversationsHi = [
+    {
+      id: 0,
+      question: 'उत्तर प्रक्षेत्र में मिट्टी की नमी सामान्य से अधिक तेजी से क्यों गिर रही है?',
+      category: 'सिंचाई एवं जल निकास',
+      answer: 'नॉर्थ फील्ड अल्फा में 7-इन-1 सेंसर टेलीमेट्री के अनुसार, पिछले 36 घंटों में मिट्टी की नमी 68% से घटकर 54% हो गई है। यह मौसम केंद्र द्वारा दर्ज 4.2°C परिवेश तापमान वृद्धि और 16 किमी/घंटा शुष्क हवाओं के कारण है। क्राउन रूट विकास चरण में गेहूं के लिए यह वाष्पोत्सर्जन सामान्य है। कोई पाइप रिसाव नहीं मिला।',
+      recommendation: 'वाष्पीकरण हानि को न्यूनतम करने के लिए कल सुबह 5:00 बजे से 7:30 बजे के बीच सिंचाई चक्र निर्धारित करें।',
+      confidence: 'उच्च • 24 घंटे सेंसर इतिहास पर आधारित'
+    },
+    {
+      id: 1,
+      question: 'मेरी गेहूं की फसल के लिए 5.8 pH मान का क्या अर्थ है?',
+      category: 'मृदा रसायन',
+      answer: '5.8 का pH मान मध्यम रूप से अम्लीय मिट्टी की स्थिति दर्शाता है। गेहूं (आदर्श सीमा 6.2–7.2) के लिए यह स्तर फास्फोरस की उपलब्धता को लगभग 25% कम कर देता है और लाभकारी नाइट्रोजन-स्थिरीकरण सूक्ष्मजीव गतिविधि को धीमा कर देता है। हालांकि पोटैशियम और आयरन सुगमता से अवशोषित होते हैं।',
+      recommendation: 'कटाई के बाद खेत की तैयारी के दौरान 1.5 टन/हेक्टेयर की दर से कृषि चूना (कैल्शियम कार्बोनेट) डालने पर विचार करें, या अम्लीय अमोनियम सल्फेट के बजाय नाइट्रेट-आधारित उर्वरकों का उपयोग करें।',
+      confidence: 'कृषि विज्ञान मॉडल • फसल: गेहूं'
+    },
+    {
+      id: 2,
+      question: '4.5 हेक्टेयर दोमट मिट्टी के लिए NPK स्थिति बताएं।',
+      category: 'उर्वरक अनुकूलन',
+      answer: 'आपके 4.5 हेक्टेयर दोमट खेत की वर्तमान टेलीमेट्री: नाइट्रोजन (N) 58 mg/kg (पर्याप्त), फास्फोरस (P) 34 mg/kg (40 mg/kg लक्ष्य से कम), और पोटैशियम (K) 187 mg/kg (उत्तम) दर्शाती है। फास्फोरस का अनुपात थोड़ा कम है।',
+      recommendation: 'नाइट्रोजन को अधिक किए बिना फास्फोरस संतुलन बहाल करने के लिए दूसरी सिंचाई से पहले 50 किग्रा DAP प्रति हेक्टेयर डालें।',
+      confidence: 'मृदा टेलीमेट्री + वृद्धि चरण'
+    },
+    {
+      id: 3,
+      question: '20% बारिश के पूर्वानुमान को देखते हुए क्या मुझे आज सिंचाई करनी चाहिए?',
+      category: 'मौसम + सेंसर एकीकरण',
+      answer: 'सेंसर टेलीमेट्री 62.4% मिट्टी की नमी दर्ज करती है, जो 50% सीमा तक पहुंचने से पहले 3.5 दिन का सुरक्षित बफर प्रदान करती है। 20% बारिश की संभावना और बादलों के कारण आज सिंचाई की तत्काल आवश्यकता नहीं है।',
+      recommendation: 'आज सिंचाई रोकें। धारा एआई कल सुबह मौसम अपडेट के बाद पुनः मूल्यांकन करेगा।',
+      confidence: 'माइक्रोक्लाइमेट + मृदा नमी एकीकरण'
+    }
+  ];
+
+  const demoConversations = isHi ? demoConversationsHi : demoConversationsEn;
   const currentConvo = demoConversations[selectedPromptIdx];
 
   return (
@@ -61,13 +100,15 @@ const AiAssistantSection = () => {
         <div className="section-header">
           <div className="section-eyebrow">
             <Sparkles size={14} />
-            <span>Context-Aware Agronomy Intelligence</span>
+            <span>{isHi ? 'सटीक संदर्भ-सचेत कृषि बुद्धिमत्ता' : 'Context-Aware Agronomy Intelligence'}</span>
           </div>
           <h2 className="section-title">
-            Ask Your Field. Ask Dhara.
+            {isHi ? 'अपने खेत से पूछें। धारा से पूछें।' : 'Ask Your Field. Ask Dhara.'}
           </h2>
           <p className="section-subtitle">
-            Dhara AI translates raw sensor telemetry into conversational agronomic guidance. Ask natural questions about soil chemistry, irrigation timing, and crop stress.
+            {isHi 
+              ? 'धारा एआई कच्चे सेंसर टेलीमेट्री डेटा को संवादात्मक कृषि सलाह में बदलता है। मृदा रसायन, सिंचाई समय और फसल स्वास्थ्य के बारे में सरल भाषा में प्रश्न पूछें।'
+              : 'Dhara AI translates raw sensor telemetry into conversational agronomic guidance. Ask natural questions about soil chemistry, irrigation timing, and crop stress.'}
           </p>
         </div>
 
@@ -83,7 +124,7 @@ const AiAssistantSection = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <HelpCircle size={20} color="var(--accent-primary)" />
-              <span>Select an Agricultural Query to Test:</span>
+              <span>{isHi ? 'परीक्षण के लिए एक कृषि प्रश्न चुनें:' : 'Select an Agricultural Query to Test:'}</span>
             </h3>
 
             {demoConversations.map((item, idx) => {
@@ -112,7 +153,7 @@ const AiAssistantSection = () => {
                     </span>
                     {isSelected && (
                       <span className="badge badge-online" style={{ fontSize: '0.65rem', padding: '0.2rem 0.5rem' }}>
-                        Active Query
+                        {isHi ? 'सक्रिय प्रश्न' : 'Active Query'}
                       </span>
                     )}
                   </div>
@@ -131,7 +172,7 @@ const AiAssistantSection = () => {
                 style={{ width: '100%', padding: '0.85rem' }}
               >
                 <MessageSquare size={18} />
-                <span>Launch Full Dhara AI Chat Assistant</span>
+                <span>{isHi ? 'संपूर्ण धारा एआई कृषि सलाहकार खोलें' : 'Launch Full Dhara AI Chat Assistant'}</span>
               </Link>
             </div>
           </div>
@@ -173,10 +214,10 @@ const AiAssistantSection = () => {
                   </div>
                   <div>
                     <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      DHARA AI Agronomic Engine
+                      {isHi ? 'धारा एआई एग्रोनॉमिक इंजन' : 'DHARA AI Agronomic Engine'}
                     </span>
                     <div style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', fontWeight: 600 }}>
-                      ● Connected to North Field 7-in-1 Sensor
+                      ● {isHi ? 'उत्तर प्रक्षेत्र 7-इन-1 सेंसर से जुड़ा हुआ' : 'Connected to North Field 7-in-1 Sensor'}
                     </div>
                   </div>
                 </div>
@@ -256,7 +297,7 @@ const AiAssistantSection = () => {
                     borderLeft: '3px solid var(--accent-primary)'
                   }}>
                     <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', marginBottom: '0.2rem' }}>
-                      🌾 Suggested Farm Action
+                      🌾 {isHi ? 'अनुशंसित कृषि कदम' : 'Suggested Farm Action'}
                     </div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 500 }}>
                       {currentConvo.recommendation}
@@ -278,7 +319,7 @@ const AiAssistantSection = () => {
             }}>
               <ShieldAlert size={16} color="var(--accent-amber)" style={{ flexShrink: 0 }} />
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
-                <strong>Responsible AI:</strong> Dhara AI recommendations assist growers with field calculations and do not replace certified agronomist lab consultations.
+                <strong>{isHi ? 'जिम्मेदार एआई:' : 'Responsible AI:'}</strong> {isHi ? 'धारा एआई की सिफारिशें किसानों को खेत गणनाओं में सहायता करती हैं और प्रमाणित कृषि वैज्ञानिक प्रयोगशाला परामर्श का स्थान नहीं लेती हैं।' : 'Dhara AI recommendations assist growers with field calculations and do not replace certified agronomist lab consultations.'}
               </p>
             </div>
 

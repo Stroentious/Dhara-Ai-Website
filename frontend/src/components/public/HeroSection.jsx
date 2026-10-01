@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 import { 
   ArrowRight, 
   Sprout, 
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 
 const HeroSection = () => {
+  const { language, t } = useLanguage();
   return (
     <section 
       style={{ 
@@ -69,7 +71,7 @@ const HeroSection = () => {
                 letterSpacing: '0.06em',
                 textTransform: 'uppercase'
               }}>
-                DHARA AI • Precision Agriculture Intelligence
+                {language !== 'en' ? 'धारा AI • सटीक कृषि बुद्धिमत्ता' : 'DHARA AI • Precision Agriculture Intelligence'}
               </span>
             </div>
 
@@ -82,15 +84,31 @@ const HeroSection = () => {
               letterSpacing: '-0.03em',
               marginBottom: '1.25rem'
             }}>
-              Intelligent Agriculture, Powered by{' '}
-              <span style={{
-                background: 'var(--gradient-primary)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                display: 'inline-block'
-              }}>
-                Real Field Data.
-              </span>
+              {language !== 'en' ? (
+                <>
+                  सटीक कृषि, वास्तविक{' '}
+                  <span style={{
+                    background: 'var(--gradient-primary)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    display: 'inline-block'
+                  }}>
+                    खेत डेटा द्वारा संचालित।
+                  </span>
+                </>
+              ) : (
+                <>
+                  Intelligent Agriculture, Powered by{' '}
+                  <span style={{
+                    background: 'var(--gradient-primary)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    display: 'inline-block'
+                  }}>
+                    Real Field Data.
+                  </span>
+                </>
+              )}
             </h1>
 
             {/* Supporting Paragraph */}
@@ -101,7 +119,9 @@ const HeroSection = () => {
               marginBottom: '2rem',
               maxWidth: '560px'
             }}>
-              Dhara AI connects physical soil sensors, microclimate telemetry, and real-time alerts to a continuous AI intelligence engine—empowering farmers with grounded decision support for irrigation, fertilization, and crop yield protection.
+              {language !== 'en'
+                ? 'धारा AI भौतिक मृदा सेंसर, सूक्ष्म जलवायु टेलीमेट्री और त्वरित अलर्ट को एक सतत AI बुद्धिमत्ता इंजन से जोड़ता है—जो किसानों को सिंचाई, उर्वरक और फसल सुरक्षा के लिए सटीक निर्णय सहायता प्रदान करता है।'
+                : 'Dhara AI connects physical soil sensors, microclimate telemetry, and real-time alerts to a continuous AI intelligence engine—empowering farmers with grounded decision support for irrigation, fertilization, and crop yield protection.'}
             </p>
 
             {/* CTA Action Buttons */}
@@ -120,7 +140,7 @@ const HeroSection = () => {
                   boxShadow: 'var(--shadow-md)'
                 }}
               >
-                <span>Explore Dhara AI</span>
+                <span>{language !== 'en' ? 'धारा AI का अन्वेषण करें' : 'Explore Dhara AI'}</span>
                 <ArrowRight size={18} />
               </Link>
 
@@ -132,7 +152,7 @@ const HeroSection = () => {
                   padding: '0.9rem 1.75rem'
                 }}
               >
-                <span>View How It Works</span>
+                <span>{language !== 'en' ? 'यह कैसे काम करता है' : 'View How It Works'}</span>
               </a>
             </div>
 
@@ -147,21 +167,21 @@ const HeroSection = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <CheckCircle2 size={18} color="var(--accent-primary)" />
                 <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  7-in-1 Soil Telemetry
+                  {language !== 'en' ? '7-इन-1 मृदा टेलीमेट्री' : '7-in-1 Soil Telemetry'}
                 </span>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <CheckCircle2 size={18} color="var(--accent-primary)" />
                 <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  LoRa Long-Range Mesh
+                  {language !== 'en' ? 'लॉन्ग-रेंज LoRa मेश' : 'LoRa Long-Range Mesh'}
                 </span>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <CheckCircle2 size={18} color="var(--accent-primary)" />
                 <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Contextual Agronomy AI
+                  {language !== 'en' ? 'प्रासंगिक एग्रोनॉमी AI' : 'Contextual Agronomy AI'}
                 </span>
               </div>
             </div>
@@ -226,10 +246,10 @@ const HeroSection = () => {
                 </div>
                 <div>
                   <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
-                    Soil Moisture
+                    {language !== 'en' ? 'मिट्टी की नमी' : 'Soil Moisture'}
                   </div>
                   <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    62.4% <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', fontWeight: 600 }}>• Optimal</span>
+                    62.4% <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', fontWeight: 600 }}>• {language !== 'en' ? 'अनुकूल' : 'Optimal'}</span>
                   </div>
                 </div>
               </div>
@@ -263,7 +283,7 @@ const HeroSection = () => {
                 </div>
                 <div>
                   <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
-                    Available Nitrogen (N)
+                    {language !== 'en' ? 'उपलब्ध नाइट्रोजन (N)' : 'Available Nitrogen (N)'}
                   </div>
                   <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                     58.3 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>mg/kg</span>
@@ -289,7 +309,7 @@ const HeroSection = () => {
               >
                 <span className="sensor-dot online" />
                 <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                  LoRa 868MHz • Online
+                  LoRa 868MHz • {language !== 'en' ? 'ऑनलाइन' : 'Online'}
                 </span>
               </div>
 
@@ -311,7 +331,7 @@ const HeroSection = () => {
               >
                 <Activity size={18} color="var(--accent-primary)" />
                 <div>
-                  <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>Field Index</div>
+                  <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>{language !== 'en' ? 'खेत स्वास्थ्य स्कोर' : 'Field Index'}</div>
                   <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--accent-primary)' }}>94 / 100</div>
                 </div>
               </div>
